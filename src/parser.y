@@ -200,7 +200,7 @@ DeclList
 	  BuiltIn f = PrintString;
 	  char const * str = "Semantic Error";
 	  Location *l = CG->GenLoadConstant(str);
-	  ;
+
 	  CG->GenBuiltInCall(f, l);
 	  bf->SetFrameSize(CG->GetFrameSize());
 	  CG->GenEndFunc();
@@ -498,9 +498,5 @@ T_INTLITERAL        { $$ = new IntLiteral(@1, $1); }
  * Please be sure the variable is set to false when submitting your final
  * version.
  */
-void InitParser()
-{
-   //PrintDebug("parser", "Initializing parser");
-   yydebug = false;
-}
+
 

@@ -1,4 +1,4 @@
-/* File: symtab.h
+/* File: scopeHandler.h
  * --------------
  * Build the symbol table.
  * Author: Deyuan Guo
@@ -62,7 +62,7 @@ class SymbolTable {
     void ResetSymbolTable();
 };
 
-extern SymbolTable *symtab;
+extern SymbolTable *scopeHandler;
 
 #endif
 

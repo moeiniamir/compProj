@@ -66,7 +66,7 @@ Location *CodeGenerator::GenTempVar() {
        do that, the assert below will always fail to remind
        you this needs to be implemented  */
     result = new Location(fpRelative, GetNextLocalLoc(), temp);
-    ;
+
     return result;
 }
 
@@ -177,7 +177,7 @@ static struct _builtin {
 
 Location *CodeGenerator::GenBuiltInCall(BuiltIn bn, Location *arg1,
                                         Location *arg2) {
-    ;
+
     struct _builtin *b = &builtins[bn];
     Location *result = NULL;
 
