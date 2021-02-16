@@ -202,12 +202,16 @@ printf("# %d",semantic_error);
 printf("# %d",semantic_error);
                                       if (semantic_error != 0){
                                           CodeGenerator *CG = new CodeGenerator();
+                                          CG->GenLabel("main");
+                                          BeginFunc *bf = CG->GenBeginFunc();
                                           BuiltIn f = PrintString;
                                           char const * str = "Semantic Error";
                                           Location *l = CG->GenLoadConstant(str);
                                           Assert(l);
                                           CG->GenBuiltInCall(f, l);
-                                          CG->GenBuiltInCall(Halt);
+                                          bf->SetFrameSize(CG->GetFrameSize());
+                                          CG->GenEndFunc();
+                                          //CG->GenBuiltInCall(Halt);
                                           CG->DoFinalCodeGen();
                                       }
                                     }
