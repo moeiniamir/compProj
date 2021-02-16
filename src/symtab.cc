@@ -9,7 +9,6 @@
 
 #include "symtab.h"
 #include "ast.h"
-#include "ast_decl.h"
 
 
 /* Global Symbol Table, used by all nodes.

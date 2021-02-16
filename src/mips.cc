@@ -40,10 +40,10 @@ static bool LocationsAreSame(Location *var1, Location *var2) {
  * from that register to its location on the stack.
  */
 void Mips::SpillRegister(Location *dst, Register reg) {
-    ;
+
     const char *offsetFromWhere = dst->GetSegment() == fpRelative
                                   ? regs[fp].name : regs[gp].name;
-    ; // all variables are 4 bytes in size
+ // all variables are 4 bytes in size
     Emit("sw %s, %d(%s)\t# spill %s from %s to %s%+d", regs[reg].name,
          dst->GetOffset(), offsetFromWhere, dst->GetName(), regs[reg].name,
          offsetFromWhere, dst->GetOffset());
@@ -55,10 +55,10 @@ void Mips::SpillRegister(Location *dst, Register reg) {
  * Simply load a word into a register.
  */
 void Mips::FillRegister(Location *src, Register reg) {
-    ;
+
     const char *offsetFromWhere = src->GetSegment() == fpRelative
                                   ? regs[fp].name : regs[gp].name;
-    ; // all variables are 4 bytes in size
+ // all variables are 4 bytes in size
     Emit("lw %s, %d(%s)\t# fill %s to %s from %s%+d", regs[reg].name,
          src->GetOffset(), offsetFromWhere, src->GetName(), regs[reg].name,
          offsetFromWhere, src->GetOffset());
@@ -314,7 +314,7 @@ void Mips::EmitReturn(Location *returnVal) {
  * to make space for all our locals/temps.
  */
 void Mips::EmitBeginFunction(int stackFrameSize) {
-    ;
+
     Emit("subu $sp, $sp, 8\t# decrement sp to make space to save ra, fp");
     Emit("sw $fp, 8($sp)\t# save fp");
     Emit("sw $ra, 4($sp)\t# save ra");
@@ -374,9 +374,9 @@ void Mips::EmitPreamble() {
  * Asserts if asked for name of an unset/out of bounds code.
  */
 const char *Mips::NameForTac(BinaryOp::OpCode code) {
-    ;
+
     const char *name = mipsName[code];
-    ;
+
     return name;
 }
 

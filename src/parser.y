@@ -200,7 +200,7 @@ DeclList
 	  BuiltIn f = PrintString;
 	  char const * str = "Semantic Error";
 	  Location *l = CG->GenLoadConstant(str);
-	  ;
+
 	  CG->GenBuiltInCall(f, l);
 	  bf->SetFrameSize(CG->GetFrameSize());
 	  CG->GenEndFunc();
