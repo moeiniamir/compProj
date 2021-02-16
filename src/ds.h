@@ -103,7 +103,7 @@ template<class Value> class Iterator {
 };
 
 
-#include "ds.cc" // icky, but allows implicit template instantiation
+#include "ds.cpp" // icky, but allows implicit template instantiation
 
 /* File: hashtable.h
  * ------------

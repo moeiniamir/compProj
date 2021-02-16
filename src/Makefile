@@ -12,10 +12,10 @@ PRODUCTS = $(COMPILER)
 default: $(PRODUCTS)
 
 # Set up the list of source and object files
-SRCS = ast.cc globals.cc scopeHandler.cc codegen.cc main.cc
+SRCS = ast.cpp globals.cpp scopeHandler.cpp codegen.cpp main.cpp
 
 # OBJS can deal with either .cc or .c files listed in SRCS
-OBJS = y.tab.o lex.yy.o $(patsubst %.cc, %.o, $(filter %.cc,$(SRCS))) $(patsubst %.c, %.o, $(filter %.c, $(SRCS)))
+OBJS = y.tab.o lex.yy.o $(patsubst %.cpp, %.o, $(filter %.cpp,$(SRCS))) $(patsubst %.c, %.o, $(filter %.c, $(SRCS)))
 
 JUNK =  *.o lex.yy.c dpp.yy.c y.tab.c y.tab.h *.core core $(COMPILER).purify purify.log
 
@@ -48,7 +48,7 @@ LIBS = -lc -lm
 # Rules for various parts of the target
 
 .yy.o: $*.yy.c
-	$(CC) $(CFLAGS) -c -o $@ $*.cc
+	$(CC) $(CFLAGS) -c -o $@ $*.cpp
 
 lex.yy.c: scanner.l  parser.y y.tab.h
 	$(LEX) $(LEXFLAGS) scanner.l
@@ -58,8 +58,8 @@ y.tab.o: y.tab.c
 
 y.tab.h y.tab.c: parser.y
 	$(YACC) $(YACCFLAGS) parser.y
-.cc.o: $*.cc
-	$(CC) $(CFLAGS) -c -o $@ $*.cc
+.cpp.o: $*.cpp
+	$(CC) $(CFLAGS) -c -o $@ $*.cpp
 
 # rules to build compiler (dcc)
 
