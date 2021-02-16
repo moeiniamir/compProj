@@ -20,7 +20,7 @@
 
 #include "ast.h"
 #include "ast_stmt.h"
-#include "list.h"
+#include "ds.h"
 #include "ast_type.h"
 
 class NamedType; // for new

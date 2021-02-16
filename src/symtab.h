@@ -9,7 +9,7 @@
 
 #include <list>
 #include <vector>
-#include "hashtable.h"
+#include "ds.h"
 
 /* Symbol Table Implementation. */
 

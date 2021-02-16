@@ -11,7 +11,7 @@
   // (types, classes, constants, etc.)
 
 #include "scanner.h"            // for MaxIdentLen
-#include "list.h"               // because we use all these types
+#include "ds.h"               // because we use all these types
 #include "ast.h"                // in the union, we need their declarations
 #include "ast_type.h"
 #include "ast_decl.h"

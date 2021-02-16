@@ -204,7 +204,7 @@ void CodeGenerator::DoFinalCodeGen() {
     }
 
     printf("    # Prewritten asm\n");
-    std::ifstream i("./src/defs.asm");
+    std::ifstream i("./src/builtin.asm");
     std::stringstream buf;
     buf << i.rdbuf();
     printf("%s", buf.str().c_str());

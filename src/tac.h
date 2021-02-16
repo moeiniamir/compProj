@@ -23,7 +23,7 @@
 #ifndef _H_tac
 #define _H_tac
 
-#include "list.h" // for VTable
+#include "ds.h" // for VTable
 
 class Mips;
 

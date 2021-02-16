@@ -19,7 +19,7 @@
 #define _H_ast_decl
 
 #include "ast.h"
-#include "list.h"
+#include "ds.h"
 #include "ast_type.h"
 
 class Type;

@@ -12,7 +12,7 @@
 #include "scanner.h"
 #include "globals.h"
 #include "parser.h" // for token codes, yylval
-#include "list.h"
+#include "ds.h"
 
 #define TAB_SIZE 8
 

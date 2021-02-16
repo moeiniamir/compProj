@@ -19,7 +19,7 @@
 #define _H_mips
 
 #include "tac.h"
-#include "list.h"
+#include "ds.h"
 
 class Location;
 

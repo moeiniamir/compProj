@@ -6,7 +6,7 @@
 #include "ast_type.h"
 #include "ast_stmt.h"
 #include "globals.h"
-#include "list.h"
+#include "ds.h"
 
 
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {

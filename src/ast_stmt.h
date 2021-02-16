@@ -21,7 +21,7 @@
 #ifndef _H_ast_stmt
 #define _H_ast_stmt
 
-#include "list.h"
+#include "ds.h"
 #include "ast.h"
 
 class Decl;
