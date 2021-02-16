@@ -37,7 +37,7 @@ Identifier::Identifier(yyltype loc, const char *n) : Node(loc) {
 }
 
 void Identifier::CheckDecl() {
-    Decl *d = symtab->Lookup(this);
+    Decl *d = scopeHandler->Lookup(this);
     if (d == NULL) {
         semantic_error = 1;
         return;
@@ -91,12 +91,12 @@ VariableDecl::VariableDecl(Identifier *n, Type *t) : Decl(n) {
 }
 
 void VariableDecl::BuildSymTable() {
-    if (symtab->LocalLookup(this->GetId())) {
-        Decl *d = symtab->Lookup(this->GetId());
+    if (scopeHandler->LocalLookup(this->GetId())) {
+        Decl *d = scopeHandler->Lookup(this->GetId());
         semantic_error = 1;
         return;
     } else {
-        idx = symtab->InsertSymbol(this);
+        idx = scopeHandler->InsertSymbol(this);
         id->SetDecl(this);
     }
 }
@@ -156,27 +156,27 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
 }
 
 void ClassDecl::BuildSymTable() {
-    if (symtab->LocalLookup(this->GetId())) {
+    if (scopeHandler->LocalLookup(this->GetId())) {
         // if two local symbols have the same name, then report an error.
-        Decl *d = symtab->Lookup(this->GetId());
+        Decl *d = scopeHandler->Lookup(this->GetId());
         semantic_error = 1;
         return;
     } else {
-        idx = symtab->InsertSymbol(this);
+        idx = scopeHandler->InsertSymbol(this);
         id->SetDecl(this);
     }
     // record the owner of the current class scope.
-    symtab->BuildScope(this->GetId()->GetIdName());
+    scopeHandler->BuildScope(this->GetId()->GetIdName());
     if (extends) {
         // record the parent of the current class.
-        symtab->SetScopeParent(extends->GetId()->GetIdName());
+        scopeHandler->SetScopeParent(extends->GetId()->GetIdName());
     }
     // record the implements of the current class.
     for (int i = 0; i < implements->NumElements(); i++) {
-        symtab->SetInterface(implements->Nth(i)->GetId()->GetIdName());
+        scopeHandler->SetInterface(implements->Nth(i)->GetId()->GetIdName());
     }
     members->BuildSymTableAll();
-    symtab->ExitScope();
+    scopeHandler->ExitScope();
 }
 
 void ClassDecl::CheckDecl() {
@@ -189,16 +189,16 @@ void ClassDecl::CheckDecl() {
     for (int i = 0; i < implements->NumElements(); i++) {
         implements->Nth(i)->Check(sem_decl, interfaceReason);
     }
-    symtab->EnterScope();
+    scopeHandler->EnterScope();
     members->CheckAll(sem_decl);
-    symtab->ExitScope();
+    scopeHandler->ExitScope();
 
     semantic_type = new NamedType(id);
     semantic_type->SetSelfType();
 }
 
 void ClassDecl::CheckInherit() {
-    symtab->EnterScope();
+    scopeHandler->EnterScope();
 
     for (int i = 0; i < members->NumElements(); i++) {
         Decl *d = members->Nth(i);
@@ -206,14 +206,14 @@ void ClassDecl::CheckInherit() {
 
         if (d->IsVariableDecl()) {
             // check class inheritance of variables.
-            Decl *t = symtab->LookupParent(d->GetId());
+            Decl *t = scopeHandler->LookupParent(d->GetId());
             if (t != NULL) {
                 // subclass cannot override inherited variables.
                 semantic_error = 1;
                 return;
             }
             // check interface inheritance of variables.
-            t = symtab->LookupInterface(d->GetId());
+            t = scopeHandler->LookupInterface(d->GetId());
             if (t != NULL) {
                 // variable names conflict with interface method names.
                 semantic_error = 1;
@@ -222,7 +222,7 @@ void ClassDecl::CheckInherit() {
 
         } else if (d->IsFunctionDecl()) {
             // check class inheritance of functions.
-            Decl *t = symtab->LookupParent(d->GetId());
+            Decl *t = scopeHandler->LookupParent(d->GetId());
             if (t != NULL) {
                 if (!t->IsFunctionDecl()) {
                     semantic_error = 1;
@@ -240,7 +240,7 @@ void ClassDecl::CheckInherit() {
                 }
             }
             // check interface inheritance of functions.
-            t = symtab->LookupInterface(d->GetId());
+            t = scopeHandler->LookupInterface(d->GetId());
             if (t != NULL) {
                 // compare the function signature.
                 FunctionDecl *fn1 = dynamic_cast<FunctionDecl*>(d);
@@ -265,7 +265,7 @@ void ClassDecl::CheckInherit() {
             // check the members of each interface.
             for (int j = 0; j < m->NumElements(); j++) {
                 Identifier *mid = m->Nth(j)->GetId();
-                Decl *t = symtab->LookupField(this->id, mid);
+                Decl *t = scopeHandler->LookupField(this->id, mid);
                 if (t == NULL) {
                     semantic_error = 1;
                     return;
@@ -284,7 +284,7 @@ void ClassDecl::CheckInherit() {
             }
         }
     }
-    symtab->ExitScope();
+    scopeHandler->ExitScope();
 }
 
 void ClassDecl::Check(checkStep c) {
@@ -297,9 +297,9 @@ void ClassDecl::Check(checkStep c) {
             id->Check(c);
             if (extends) extends->Check(c);
             implements->CheckAll(c);
-            symtab->EnterScope();
+            scopeHandler->EnterScope();
             members->CheckAll(c);
-            symtab->ExitScope();
+            scopeHandler->ExitScope();
     }
 }
 
@@ -432,17 +432,17 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
 }
 
 void InterfaceDecl::BuildSymTable() {
-    if (symtab->LocalLookup(this->GetId())) {
-        Decl *d = symtab->Lookup(this->GetId());
+    if (scopeHandler->LocalLookup(this->GetId())) {
+        Decl *d = scopeHandler->Lookup(this->GetId());
         semantic_error = 1;
         return;
     } else {
-        idx = symtab->InsertSymbol(this);
+        idx = scopeHandler->InsertSymbol(this);
         id->SetDecl(this);
     }
-    symtab->BuildScope(this->GetId()->GetIdName());
+    scopeHandler->BuildScope(this->GetId()->GetIdName());
     members->BuildSymTableAll();
-    symtab->ExitScope();
+    scopeHandler->ExitScope();
 }
 
 void InterfaceDecl::Check(checkStep c) {
@@ -453,9 +453,9 @@ void InterfaceDecl::Check(checkStep c) {
             // fall through.
         default:
             id->Check(c);
-            symtab->EnterScope();
+            scopeHandler->EnterScope();
             members->CheckAll(c);
-            symtab->ExitScope();
+            scopeHandler->ExitScope();
     }
 }
 
@@ -478,27 +478,27 @@ void FunctionDecl::SetFunctionBody(Stmt *b) {
 }
 
 void FunctionDecl::BuildSymTable() {
-    if (symtab->LocalLookup(this->GetId())) {
-        Decl *d = symtab->Lookup(this->GetId());
+    if (scopeHandler->LocalLookup(this->GetId())) {
+        Decl *d = scopeHandler->Lookup(this->GetId());
         semantic_error = 1;
         return;
     } else {
-        idx = symtab->InsertSymbol(this);
+        idx = scopeHandler->InsertSymbol(this);
         id->SetDecl(this);
     }
-    symtab->BuildScope();
+    scopeHandler->BuildScope();
     formals->BuildSymTableAll();
     if (body) body->BuildSymTable(); // function body must be a StmtBlock.
-    symtab->ExitScope();
+    scopeHandler->ExitScope();
 }
 
 void FunctionDecl::CheckDecl() {
     returnType->Check(sem_decl);
     id->Check(sem_decl);
-    symtab->EnterScope();
+    scopeHandler->EnterScope();
     formals->CheckAll(sem_decl);
     if (body) body->Check(sem_decl);
-    symtab->ExitScope();
+    scopeHandler->ExitScope();
 
     // check the signature of the main function.
     if (!strcmp(id->GetIdName(), "main")) {
@@ -518,10 +518,10 @@ void FunctionDecl::Check(checkStep c) {
         default:
             returnType->Check(c);
             id->Check(c);
-            symtab->EnterScope();
+            scopeHandler->EnterScope();
             formals->CheckAll(c);
             if (body) body->Check(c);
-            symtab->ExitScope();
+            scopeHandler->ExitScope();
     }
 }
 
@@ -972,7 +972,7 @@ void AssignExpr::Emit() {
 }
 
 void This::CheckType() {
-    Decl *d = symtab->LookupThis();
+    Decl *d = scopeHandler->LookupThis();
     if (!d || !d->IsClassDecl()) {
         semantic_error = 1;
         return;
@@ -1077,7 +1077,7 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
 
 void FieldAccess::CheckDecl() {
     if (!base) {
-        Decl *d = symtab->Lookup(field);
+        Decl *d = scopeHandler->Lookup(field);
         if (d == NULL) {
             semantic_error = 1;
             return;
@@ -1114,7 +1114,7 @@ void FieldAccess::CheckType() {
             return;
         }
 
-        Decl *d = symtab->LookupField(
+        Decl *d = scopeHandler->LookupField(
                 dynamic_cast<NamedType*>(base_t)->GetId(), field);
 
         if (d == NULL || !d->IsVariableDecl()) {
@@ -1127,7 +1127,7 @@ void FieldAccess::CheckType() {
             // Note: If base is a subclass of current class, and the
             // field is belong to current class, then this field is
             // accessible.
-            Decl *cur_class = symtab->LookupThis();
+            Decl *cur_class = scopeHandler->LookupThis();
             if (!cur_class || !cur_class->IsClassDecl()) {
                 // not in a class scope, all the variable members are
                 // not accessible.
@@ -1138,7 +1138,7 @@ void FieldAccess::CheckType() {
             // in a class scope, the variable members can be
             // accessed by 'this' or the compatible class instance.
             Type *cur_t = cur_class->GetType();
-            d = symtab->LookupField(
+            d = scopeHandler->LookupField(
                     dynamic_cast<NamedType*>(cur_t)->GetId(), field);
 
             if (d == NULL || !d->IsVariableDecl()) {
@@ -1199,7 +1199,7 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
 
 void Call::CheckDecl() {
     if (!base) {
-        Decl *d = symtab->Lookup(field);
+        Decl *d = scopeHandler->Lookup(field);
         if (d == NULL || !d->IsFunctionDecl()) {
             semantic_error = 1;
             return;
@@ -1240,7 +1240,7 @@ void Call::CheckType() {
                 semantic_error = 1;
                 return;
             } else {
-                Decl *d = symtab->LookupField(
+                Decl *d = scopeHandler->LookupField(
                         dynamic_cast<NamedType*>(t)->GetId(), field);
                 if (d == NULL || !d->IsFunctionDecl()) {
                     semantic_error = 1;
@@ -1539,7 +1539,7 @@ Program::Program(List<Decl*> *d) {
 }
 
 void Program::BuildSymTable() {
-    symtab = new SymbolTable();
+    scopeHandler = new SymbolTable();
 
     /* Pass 1: Traverse the AST and build the symbol table. Report the
      * errors of declaration conflict in any local scopes. */
@@ -1557,17 +1557,17 @@ void Program::Check() {
 
     /* Pass 2: Traverse the AST and report any errors of undeclared
      * identifiers except the field access and function calls. */
-    symtab->ResetSymbolTable();
+    scopeHandler->ResetSymbolTable();
     decls->CheckAll(sem_decl);
 
     /* Pass 3: Traverse the AST and report errors related to the class and
      * interface inheritance. */
-    symtab->ResetSymbolTable();
+    scopeHandler->ResetSymbolTable();
     decls->CheckAll(sem_inh);
 
     /* Pass 4: Traverse the AST and report errors related to types, function
      * calls and field access. Actually, check all the remaining errors. */
-    symtab->ResetSymbolTable();
+    scopeHandler->ResetSymbolTable();
     decls->CheckAll(sem_type);
 }
 
@@ -1628,17 +1628,17 @@ StmtBlock::StmtBlock(List<VariableDecl*> *d, List<Stmt*> *s) {
 
 
 void StmtBlock::BuildSymTable() {
-    symtab->BuildScope();
+    scopeHandler->BuildScope();
     decls->BuildSymTableAll();
     stmts->BuildSymTableAll();
-    symtab->ExitScope();
+    scopeHandler->ExitScope();
 }
 
 void StmtBlock::Check(checkStep c) {
-    symtab->EnterScope();
+    scopeHandler->EnterScope();
     decls->CheckAll(c);
     stmts->CheckAll(c);
-    symtab->ExitScope();
+    scopeHandler->ExitScope();
 }
 
 void StmtBlock::Emit() {
@@ -1661,9 +1661,9 @@ ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b) {
 
 
 void ForStmt::BuildSymTable() {
-    symtab->BuildScope();
+    scopeHandler->BuildScope();
     body->BuildSymTable();
-    symtab->ExitScope();
+    scopeHandler->ExitScope();
 }
 
 void ForStmt::CheckType() {
@@ -1674,9 +1674,9 @@ void ForStmt::CheckType() {
         return;
     }
     step->Check(sem_type);
-    symtab->EnterScope();
+    scopeHandler->EnterScope();
     body->Check(sem_type);
-    symtab->ExitScope();
+    scopeHandler->ExitScope();
 }
 
 void ForStmt::Check(checkStep c) {
@@ -1687,9 +1687,9 @@ void ForStmt::Check(checkStep c) {
             init->Check(c);
             test->Check(c);
             step->Check(c);
-            symtab->EnterScope();
+            scopeHandler->EnterScope();
             body->Check(c);
-            symtab->ExitScope();
+            scopeHandler->ExitScope();
     }
 }
 
@@ -1714,9 +1714,9 @@ void ForStmt::Emit() {
 
 
 void WhileStmt::BuildSymTable() {
-    symtab->BuildScope();
+    scopeHandler->BuildScope();
     body->BuildSymTable();
-    symtab->ExitScope();
+    scopeHandler->ExitScope();
 }
 
 void WhileStmt::CheckType() {
@@ -1725,9 +1725,9 @@ void WhileStmt::CheckType() {
         semantic_error = 1;
         return;
     }
-    symtab->EnterScope();
+    scopeHandler->EnterScope();
     body->Check(sem_type);
-    symtab->ExitScope();
+    scopeHandler->ExitScope();
 }
 
 void WhileStmt::Check(checkStep c) {
@@ -1736,9 +1736,9 @@ void WhileStmt::Check(checkStep c) {
             this->CheckType(); break;
         default:
             test->Check(c);
-            symtab->EnterScope();
+            scopeHandler->EnterScope();
             body->Check(c);
-            symtab->ExitScope();
+            scopeHandler->ExitScope();
     }
 }
 
@@ -1767,13 +1767,13 @@ IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) {
 
 
 void IfStmt::BuildSymTable() {
-    symtab->BuildScope();
+    scopeHandler->BuildScope();
     body->BuildSymTable();
-    symtab->ExitScope();
+    scopeHandler->ExitScope();
     if (elseBody) {
-        symtab->BuildScope();
+        scopeHandler->BuildScope();
         elseBody->BuildSymTable();
-        symtab->ExitScope();
+        scopeHandler->ExitScope();
     }
 }
 
@@ -1783,13 +1783,13 @@ void IfStmt::CheckType() {
         semantic_error = 1;
         return;
     }
-    symtab->EnterScope();
+    scopeHandler->EnterScope();
     body->Check(sem_type);
-    symtab->ExitScope();
+    scopeHandler->ExitScope();
     if (elseBody) {
-        symtab->EnterScope();
+        scopeHandler->EnterScope();
         elseBody->Check(sem_type);
-        symtab->ExitScope();
+        scopeHandler->ExitScope();
     }
 }
 
@@ -1799,13 +1799,13 @@ void IfStmt::Check(checkStep c) {
             this->CheckType(); break;
         default:
             test->Check(c);
-            symtab->EnterScope();
+            scopeHandler->EnterScope();
             body->Check(c);
-            symtab->ExitScope();
+            scopeHandler->ExitScope();
             if (elseBody) {
-                symtab->EnterScope();
+                scopeHandler->EnterScope();
                 elseBody->Check(c);
-                symtab->ExitScope();
+                scopeHandler->ExitScope();
             }
     }
 }
@@ -1867,16 +1867,16 @@ CaseStmt::CaseStmt(IntLiteral *v, List<Stmt*> *s) {
 
 
 void CaseStmt::BuildSymTable() {
-    symtab->BuildScope();
+    scopeHandler->BuildScope();
     stmts->BuildSymTableAll();
-    symtab->ExitScope();
+    scopeHandler->ExitScope();
 }
 
 void CaseStmt::Check(checkStep c) {
     if (value) value->Check(c);
-    symtab->EnterScope();
+    scopeHandler->EnterScope();
     stmts->CheckAll(c);
-    symtab->ExitScope();
+    scopeHandler->ExitScope();
 }
 
 void CaseStmt::GenCaseLabel() {
@@ -1898,16 +1898,16 @@ SwitchStmt::SwitchStmt(Expr *e, List<CaseStmt*> *c) {
 
 
 void SwitchStmt::BuildSymTable() {
-    symtab->BuildScope();
+    scopeHandler->BuildScope();
     cases->BuildSymTableAll();
-    symtab->ExitScope();
+    scopeHandler->ExitScope();
 }
 
 void SwitchStmt::Check(checkStep c) {
     expr->Check(c);
-    symtab->EnterScope();
+    scopeHandler->EnterScope();
     cases->CheckAll(c);
-    symtab->ExitScope();
+    scopeHandler->ExitScope();
 }
 
 void SwitchStmt::Emit() {
@@ -2085,7 +2085,7 @@ NamedType::NamedType(Identifier *i) : Type(*i->GetLocation()) {
 
 
 void NamedType::CheckDecl(checkFor r) {
-    Decl *d = symtab->Lookup(this->id);
+    Decl *d = scopeHandler->Lookup(this->id);
     if (d == NULL || (!d->IsClassDecl() && !d->IsInterfaceDecl())) {
         semantic_error = 1;
         return;

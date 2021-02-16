@@ -1,4 +1,4 @@
-/* File: symtab.cc
+/* File: scopeHandler.cc
  * ---------------
  * Build the symbol table.
  * Author: Deyuan Guo
@@ -7,13 +7,13 @@
 #include <iostream>
 #include "string.h"
 
-#include "symtab.h"
+#include "scopeHandler.h"
 #include "ast.h"
 
 
 /* Global Symbol Table, used by all nodes.
  */
-SymbolTable *symtab;
+SymbolTable *scopeHandler;
 
 
 /* Scope class, maintain the necessary information of scope structure.

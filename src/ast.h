@@ -43,9 +43,8 @@
 #define _H_ast
 
 #include <stdlib.h>   // for NULL
-#include "location.h"
 #include <iostream>
-#include "symtab.h"
+#include "scopeHandler.h"
 #include "globals.h"
 #include "codegen.h"
 #include "ds.h"

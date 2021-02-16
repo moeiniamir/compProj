@@ -9,12 +9,11 @@
  * part, you will just use the class as given.
  */
 
-#ifndef _H_errors
-#define _H_errors
+#ifndef _H_globals
+#define _H_globals
 
 #include <string>
 using std::string;
-#include "location.h"
 class Type;
 class Identifier;
 class Expr;
@@ -58,5 +57,51 @@ static const char *neg_arr_size = "Array size is <= 0\\n";
 
 extern int syntax_error;
 extern int semantic_error;
+
+
+/* Typedef: yyltype
+ * ----------------
+ * Defines the struct type that is used by the scanner to store
+ * position information about each lexeme scanned.
+ */
+typedef struct yyltype
+{
+    int timestamp;                 // you can ignore this field
+    int first_line, first_column;
+    int last_line, last_column;
+    char *text;                    // you can also ignore this field
+} yyltype;
+#define YYLTYPE yyltype
+
+
+/* Global variable: yylloc
+ * ------------------------
+ * The global variable holding the position information about the
+ * lexeme just scanned.
+ */
+extern struct yyltype yylloc;
+
+
+/* Function: Join
+ * --------------
+ * Takes two locations and returns a new location which represents
+ * the span from first to last, inclusive.
+ */
+inline yyltype Join(yyltype first, yyltype last)
+{
+    yyltype combined;
+    combined.first_column = first.first_column;
+    combined.first_line = first.first_line;
+    combined.last_column = last.last_column;
+    combined.last_line = last.last_line;
+    return combined;
+}
+
+/* Same as above, except operates on pointers as a convenience  */
+inline yyltype Join(yyltype *firstPtr, yyltype *lastPtr)
+{
+    return Join(*firstPtr, *lastPtr);
+}
+
 #endif
 

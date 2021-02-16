@@ -24,9 +24,6 @@
 static int curLineNum, curColNum;
 List<const char*> savedLines;
 
-static void DoBeforeEachAction();
-#define YY_USER_ACTION DoBeforeEachAction();
-
 %}
 
 /* States
@@ -156,7 +153,7 @@ SINGLE_COMMENT    ("//"[^\n]*)
 %%
 
 
-/* Function: InitScanner
+/* Function: initializeFlex
  * ---------------------
  * This function will be called before any calls to yylex().  It is designed
  * to give you an opportunity to do anything that must be done to initialize
@@ -168,14 +165,14 @@ SINGLE_COMMENT    ("//"[^\n]*)
  * be helpful when debugging your scanner. Please be sure the variable is
  * set to false when submitting your final version.
  */
-void InitScanner()
+void initializeFlex()
 {
     //PrintDebug("lex", "Initializing scanner");
     yy_flex_debug = false;
-    BEGIN(N);
-    yy_push_state(COPY); // copy first line at start
-    curLineNum = 1;
-    curColNum = 1;
+    //BEGIN(N);
+    //yy_push_state(COPY); // copy first line at start
+    //curLineNum = 1;
+    //curColNum = 1;
 }
 
 
@@ -186,13 +183,7 @@ void InitScanner()
  * On each match, we fill in the fields to record its location and
  * update our column counter.
  */
-static void DoBeforeEachAction()
-{
-   yylloc.first_line = curLineNum;
-   yylloc.first_column = curColNum;
-   yylloc.last_column = curColNum + yyleng - 1;
-   curColNum += yyleng;
-}
+
 
 /* Function: GetLineNumbered()
  * ---------------------------
@@ -201,9 +192,6 @@ static void DoBeforeEachAction()
  * each line scanned and appends each to a list so we can later
  * retrieve them to report the context for errors.
  */
-const char *GetLineNumbered(int num) {
-   if (num <= 0 || num > savedLines.NumElements()) return NULL;
-   return savedLines.Nth(num-1);
-}
+
 
 

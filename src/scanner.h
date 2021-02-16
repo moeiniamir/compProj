@@ -19,8 +19,8 @@ int yylex();              // Defined in the generated lex.yy.c file
 void yyrestart(FILE *fp); // ditto
 
 
-void InitScanner();                 // Defined in scanner.l user subroutines
-const char *GetLineNumbered(int n); // ditto
+void initializeFlex();                 // Defined in scanner.l user subroutines
+//const char *GetLineNumbered(int n); // ditto
 
 #endif
 
