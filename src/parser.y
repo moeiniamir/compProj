@@ -35,6 +35,8 @@
 #include "scanner.h" // for yylex
 #include "parser.h"
 #include "errors.h"
+#include "codegen.h"
+#include "ast.h"
 
 void yyerror(const char *msg); // standard error-handling routine
 
@@ -181,12 +183,30 @@ DeclList
        * it once you have other uses of @n */
       Program *program = new Program($1);
       // if no errors, advance to next phase
-      if (ReportError::NumErrors() == 0)
+      if (syntax_error == 0)
 	  program->BuildST();
-      if (ReportError::NumErrors() == 0)
+      else{
+	  printf("syntax error");
+	  return 1;
+      }
+      if (semantic_error == 0)
 	  program->Check();
-      if (ReportError::NumErrors() == 0)
+      if (semantic_error == 0)
 	  program->Emit();
+      if (semantic_error != 0){
+	  CodeGenerator *CG = new CodeGenerator();
+	  CG->GenLabel("main");
+	  BeginFunc *bf = CG->GenBeginFunc();
+	  BuiltIn f = PrintString;
+	  char const * str = "Semantic Error";
+	  Location *l = CG->GenLoadConstant(str);
+	  Assert(l);
+	  CG->GenBuiltInCall(f, l);
+	  bf->SetFrameSize(CG->GetFrameSize());
+	  CG->GenEndFunc();
+	  //CG->GenBuiltInCall(Halt);
+	  CG->DoFinalCodeGen();
+      }
 }
 ;
 

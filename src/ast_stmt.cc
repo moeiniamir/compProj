@@ -82,7 +82,8 @@ void Program::Emit() {
         }
     }
     if (!has_main) {
-        ReportError::NoMainFound();
+        semantic_error = 1;
+        return;
         return;
     }
 
@@ -100,6 +101,9 @@ void Program::Emit() {
     PrintDebug("tac+", "Begin Emitting TAC for Program.");
     decls->EmitAll();
     if (IsDebugOn("tac+")) { this->Print(0); }
+
+    if(semantic_error != 0)
+        return;
 
     // Emit the TAC or final MIPS assembly code.
     CG->DoFinalCodeGen();
@@ -164,7 +168,8 @@ void ForStmt::CheckType() {
     init->Check(E_CheckType);
     test->Check(E_CheckType);
     if (test->GetType() && test->GetType() != Type::boolType) {
-        ReportError::TestNotBoolean(test);
+        semantic_error = 1;
+        return;
     }
     step->Check(E_CheckType);
     symtab->EnterScope();
@@ -218,7 +223,8 @@ void WhileStmt::BuildST() {
 void WhileStmt::CheckType() {
     test->Check(E_CheckType);
     if (test->GetType() && test->GetType() != Type::boolType) {
-        ReportError::TestNotBoolean(test);
+        semantic_error = 1;
+        return;
     }
     symtab->EnterScope();
     body->Check(E_CheckType);
@@ -279,7 +285,8 @@ void IfStmt::BuildST() {
 void IfStmt::CheckType() {
     test->Check(E_CheckType);
     if (test->GetType() && test->GetType() != Type::boolType) {
-        ReportError::TestNotBoolean(test);
+        semantic_error = 1;
+        return;
     }
     symtab->EnterScope();
     body->Check(E_CheckType);
@@ -330,7 +337,8 @@ void BreakStmt::Check(checkT c) {
             if (n->IsLoopStmt() || n->IsCaseStmt()) return;
             n = n->GetParent();
         }
-        ReportError::BreakOutsideLoop(this);
+        semantic_error = 1;
+        return;
     }
 }
 
@@ -476,7 +484,8 @@ void ReturnStmt::Check(checkT c) {
         Type *t_expected = dynamic_cast<FunctionDecl*>(n)->GetType();
         if (t_given && t_expected) {
             if (!t_expected->IsCompatibleWith(t_given)) {
-                ReportError::ReturnMismatch(this, t_given, t_expected);
+                semantic_error = 1;
+                return;
             }
         }
     }
@@ -507,7 +516,8 @@ void PrintStmt::Check(checkT c) {
             Type *t = args->Nth(i)->GetType();
             if (t != NULL && t != Type::stringType && t != Type::intType
                      && t != Type::boolType) {
-                ReportError::PrintArgMismatch(args->Nth(i), i + 1, t);
+                semantic_error = 1;
+                return;
             }
         }
     }

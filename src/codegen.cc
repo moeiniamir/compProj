@@ -173,7 +173,8 @@ static struct _builtin {
     {"_PrintInt", 1, false},
     {"_PrintString", 1, false},
     {"_PrintBool", 1, false},
-    {"_Halt", 0, false}
+    {"_Halt", 0, false},
+//    {"_SemanError", 0, false}
 };
 
 Location *CodeGenerator::GenBuiltInCall(BuiltIn bn,Location *arg1,

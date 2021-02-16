@@ -63,11 +63,14 @@ void NamedType::PrintChildren(int indentLevel) {
 void NamedType::CheckDecl(reasonT r) {
     Decl *d = symtab->Lookup(this->id);
     if (d == NULL || (!d->IsClassDecl() && !d->IsInterfaceDecl())) {
-        ReportError::IdentifierNotDeclared(this->id, r);
+        semantic_error = 1;
+        return;
     } else if (r == LookingForClass && !d->IsClassDecl()) {
-        ReportError::IdentifierNotDeclared(this->id, r);
+        semantic_error = 1;
+        return;
     } else if (r == LookingForInterface && !d->IsInterfaceDecl()) {
-        ReportError::IdentifierNotDeclared(this->id, r);
+        semantic_error = 1;
+        return;
     } else {
         this->id->SetDecl(d);
         expr_type = this;

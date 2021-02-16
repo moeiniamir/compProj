@@ -54,7 +54,8 @@ void Identifier::PrintChildren(int indentLevel) {
 void Identifier::CheckDecl() {
     Decl *d = symtab->Lookup(this);
     if (d == NULL) {
-        ReportError::IdentifierNotDeclared(this, LookingForVariable);
+        semantic_error = 1;
+        return;
     } else {
         this->SetDecl(d);
     }
