@@ -36,7 +36,8 @@ void VarDecl::PrintChildren(int indentLevel) {
 void VarDecl::BuildST() {
     if (symtab->LocalLookup(this->GetId())) {
         Decl *d = symtab->Lookup(this->GetId());
-        ReportError::DeclConflict(this, d);
+        semantic_error = 1;
+        return;
     } else {
         idx = symtab->InsertSymbol(this);
         id->SetDecl(this);
@@ -75,9 +76,8 @@ void VarDecl::AssignMemberOffset(bool inClass, int offset) {
 
 void VarDecl::Emit() {
     if (type == Type::doubleType) {
-        ReportError::Formatted(this->GetLocation(),
-                "Double type is not supported by compiler back end yet.");
-        Assert(0);
+        semantic_error = 1;
+        return;
     }
 
     if (!emit_loc) {
@@ -112,7 +112,8 @@ void ClassDecl::BuildST() {
     if (symtab->LocalLookup(this->GetId())) {
         // if two local symbols have the same name, then report an error.
         Decl *d = symtab->Lookup(this->GetId());
-        ReportError::DeclConflict(this, d);
+        semantic_error = 1;
+        return;
     } else {
         idx = symtab->InsertSymbol(this);
         id->SetDecl(this);
@@ -161,13 +162,15 @@ void ClassDecl::CheckInherit() {
             Decl *t = symtab->LookupParent(d->GetId());
             if (t != NULL) {
                 // subclass cannot override inherited variables.
-                ReportError::DeclConflict(d, t);
+                semantic_error = 1;
+                return;
             }
             // check interface inheritance of variables.
             t = symtab->LookupInterface(d->GetId());
             if (t != NULL) {
                 // variable names conflict with interface method names.
-                ReportError::DeclConflict(d, t);
+                semantic_error = 1;
+                return;
             }
 
         } else if (d->IsFnDecl()) {
@@ -175,7 +178,8 @@ void ClassDecl::CheckInherit() {
             Decl *t = symtab->LookupParent(d->GetId());
             if (t != NULL) {
                 if (!t->IsFnDecl()) {
-                    ReportError::DeclConflict(d, t);
+                    semantic_error = 1;
+                    return;
                 } else {
                     // compare the function signature.
                     FnDecl *fn1 = dynamic_cast<FnDecl*>(d);
@@ -183,7 +187,8 @@ void ClassDecl::CheckInherit() {
                     if (fn1->GetType() && fn2->GetType() // correct return type
                             && !fn1->IsEquivalentTo(fn2)) {
                         // subclass cannot overload inherited functions.
-                        ReportError::OverrideMismatch(d);
+                        semantic_error = 1;
+                        return;
                     }
                 }
             }
@@ -196,7 +201,8 @@ void ClassDecl::CheckInherit() {
                 if (fn1->GetType() && fn2->GetType() // correct return type
                         && !fn1->IsEquivalentTo(fn2)) {
                     // subclass cannot overload inherited functions.
-                    ReportError::OverrideMismatch(d);
+                    semantic_error = 1;
+                    return;
                 }
             }
             // check scopes within the function and keep active scope correct.
@@ -214,8 +220,8 @@ void ClassDecl::CheckInherit() {
                 Identifier *mid = m->Nth(j)->GetId();
                 Decl *t = symtab->LookupField(this->id, mid);
                 if (t == NULL) {
-                    ReportError::InterfaceNotImplemented(this,
-                            implements->Nth(i));
+                    semantic_error = 1;
+                    return;
                     break;
                 } else {
                     // check the function signature.
@@ -223,8 +229,8 @@ void ClassDecl::CheckInherit() {
                     FnDecl *fn2 = dynamic_cast<FnDecl*>(t);
                     if (!fn1 || !fn2 || !fn1->GetType() || !fn2->GetType()
                             || !fn1->IsEquivalentTo(fn2)) {
-                        ReportError::InterfaceNotImplemented(this,
-                                implements->Nth(i));
+                        semantic_error = 1;
+                        return;
                         break;
                     }
                 }
@@ -389,7 +395,8 @@ void InterfaceDecl::PrintChildren(int indentLevel) {
 void InterfaceDecl::BuildST() {
     if (symtab->LocalLookup(this->GetId())) {
         Decl *d = symtab->Lookup(this->GetId());
-        ReportError::DeclConflict(this, d);
+        semantic_error = 1;
+        return;
     } else {
         idx = symtab->InsertSymbol(this);
         id->SetDecl(this);
@@ -414,8 +421,8 @@ void InterfaceDecl::Check(checkT c) {
 }
 
 void InterfaceDecl::Emit() {
-    ReportError::Formatted(this->GetLocation(),
-            "Interface is not supported by compiler back end yet.");
+    semantic_error = 1;
+    return;
     Assert(0);
 }
 
@@ -446,7 +453,8 @@ void FnDecl::PrintChildren(int indentLevel) {
 void FnDecl::BuildST() {
     if (symtab->LocalLookup(this->GetId())) {
         Decl *d = symtab->Lookup(this->GetId());
-        ReportError::DeclConflict(this, d);
+        semantic_error = 1;
+        return;
     } else {
         idx = symtab->InsertSymbol(this);
         id->SetDecl(this);
@@ -467,12 +475,9 @@ void FnDecl::CheckDecl() {
 
     // check the signature of the main function.
     if (!strcmp(id->GetIdName(), "main")) {
-//        if (returnType != Type::voidType) {
-//            ReportError::Formatted(this->GetLocation(),
-//                    "Return value of 'main' function is expected to be void.");
-//        }
         if (formals->NumElements() != 0) {
-            ReportError::NumArgsMismatch(id, 0, formals->NumElements());
+            semantic_error = 1;
+            return;
         }
     }
 
@@ -539,8 +544,8 @@ void FnDecl::AssignMemberOffset(bool inClass, int offset) {
 void FnDecl::Emit() {
     PrintDebug("tac+", "Begin Emitting TAC in FnDecl.");
     if (returnType == Type::doubleType) {
-        ReportError::Formatted(this->GetLocation(),
-                "Double type is not supported by compiler back end yet.");
+        semantic_error = 1;
+        return;
         Assert(0);
     }
 
@@ -559,8 +564,8 @@ void FnDecl::Emit() {
     for (int i = 0; i < formals->NumElements(); i++) {
         VarDecl *v = formals->Nth(i);
         if (v->GetType() == Type::doubleType) {
-            ReportError::Formatted(this->GetLocation(),
-                    "Double type is not supported by compiler back end yet.");
+            semantic_error = 1;
+            return;
             Assert(0);
         }
         Location *l = new Location(fpRelative, CG->GetNextParamLoc(),

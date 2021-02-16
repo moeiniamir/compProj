@@ -35,6 +35,8 @@
 #include "scanner.h" // for yylex
 #include "parser.h"
 #include "errors.h"
+#include "codegen.h"
+#include "ast.h"
 
 void yyerror(const char *msg); // standard error-handling routine
 
@@ -185,12 +187,29 @@ Program   :    DeclList            {
                                        * it once you have other uses of @n */
                                       Program *program = new Program($1);
                                       // if no errors, advance to next phase
-                                      if (ReportError::NumErrors() == 0)
+                                      if (syntax_error == 0)
                                           program->BuildST();
-                                      if (ReportError::NumErrors() == 0)
+                                      else{
+                                          printf("syntax error");
+                                          return 1;
+                                      }
+printf("# %d",semantic_error);
+                                      if (semantic_error == 0)
                                           program->Check();
-                                      if (ReportError::NumErrors() == 0)
+printf("# %d",semantic_error);
+                                      if (semantic_error == 0)
                                           program->Emit();
+printf("# %d",semantic_error);
+                                      if (semantic_error != 0){
+                                          CodeGenerator *CG = new CodeGenerator();
+                                          BuiltIn f = PrintString;
+                                          char const * str = "Semantic Error";
+                                          Location *l = CG->GenLoadConstant(str);
+                                          Assert(l);
+                                          CG->GenBuiltInCall(f, l);
+                                          CG->GenBuiltInCall(Halt);
+                                          CG->DoFinalCodeGen();
+                                      }
                                     }
 ;
 

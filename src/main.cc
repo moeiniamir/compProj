@@ -19,13 +19,13 @@
  * InitParser() is used to set up the parser. The call to yyparse() will
  * attempt to parse a complete program from the input.
  */
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     ParseCommandLine(argc, argv);
 
     InitScanner();
     InitParser();
     yyparse();
-    return (ReportError::NumErrors() == 0? 0 : -1);
+//    return (syntax_error + semantic_error == 0 ? 0 : -1);
+    return 0;
 }
 

@@ -55,8 +55,8 @@ void DoubleConstant::Check(checkT c) {
 }
 
 void DoubleConstant::Emit() {
-    ReportError::Formatted(this->GetLocation(),
-            "Double is not supported by compiler back end yet.");
+    semantic_error = 1;
+    return;
     Assert(0);
 }
 
@@ -163,7 +163,8 @@ void ArithmeticExpr::CheckType() {
         } else if (tr == Type::doubleType) {
             expr_type = Type::doubleType;
         } else {
-            ReportError::IncompatibleOperand(op, tr);
+            semantic_error = 1;
+            return;
         }
     } else { // for + - * / %
         Type *tl = left->GetType();
@@ -179,7 +180,8 @@ void ArithmeticExpr::CheckType() {
                 ) {
             expr_type = Type::doubleType;
         } else {
-            ReportError::IncompatibleOperands(op, tl, tr);
+            semantic_error = 1;
+            return;
         }
     }
 }
@@ -220,7 +222,8 @@ void RelationalExpr::CheckType() {
 
     if (!(tl == Type::intType && tr == Type::intType) &&
             !(tl == Type::doubleType && tr == Type::doubleType)) {
-        ReportError::IncompatibleOperands(op, tl, tr);
+        semantic_error = 1;
+        return;
     }
 }
 
@@ -259,7 +262,8 @@ void EqualityExpr::CheckType() {
     }
 
     if (!tr->IsCompatibleWith(tl) && !tl->IsCompatibleWith(tr)) {
-        ReportError::IncompatibleOperands(op, tl, tr);
+        semantic_error = 1;
+        return;
     }
 }
 
@@ -314,7 +318,8 @@ void LogicalExpr::CheckType() {
             return;
         }
         if (tr != Type::boolType) {
-            ReportError::IncompatibleOperand(op, tr);
+            semantic_error = 1;
+            return;
         }
     } else { // for && and ||
         Type *tl = left->GetType();
@@ -324,7 +329,8 @@ void LogicalExpr::CheckType() {
             return;
         }
         if (tl != Type::boolType || tr != Type::boolType) {
-            ReportError::IncompatibleOperands(op, tl, tr);
+            semantic_error = 1;
+            return;
         }
     }
 }
@@ -367,7 +373,8 @@ void AssignExpr::CheckType() {
     }
 
     if (!tl->IsCompatibleWith(tr)) {
-        ReportError::IncompatibleOperands(op, tl, tr);
+        semantic_error = 1;
+        return;
     }
 }
 
@@ -406,7 +413,8 @@ void This::PrintChildren(int indentLevel) {
 void This::CheckType() {
     Decl *d = symtab->LookupThis();
     if (!d || !d->IsClassDecl()) {
-        ReportError::ThisOutsideClassScope(this);
+        semantic_error = 1;
+        return;
     } else {
         // Note: here create a new NamedType for 'this'.
         expr_type = new NamedType(d->GetId());
@@ -445,7 +453,8 @@ void ArrayAccess::CheckType() {
     if (t == NULL) {
         // some error accur in subscript, so skip it.
     } else if (t != Type::intType) {
-        ReportError::SubscriptNotInteger(subscript);
+        semantic_error = 1;
+        return;
     }
 
     base->Check(E_CheckType);
@@ -454,7 +463,8 @@ void ArrayAccess::CheckType() {
         // some error accur in base, so skip it.
         err++;
     } else if (!t->IsArrayType()) {
-        ReportError::BracketsOnNonArray(base);
+        semantic_error = 1;
+        return;
         err++;
     }
 
@@ -522,7 +532,8 @@ void FieldAccess::CheckDecl() {
     if (!base) {
         Decl *d = symtab->Lookup(field);
         if (d == NULL) {
-            ReportError::IdentifierNotDeclared(field, LookingForVariable);
+            semantic_error = 1;
+            return;
             return;
         } else {
             field->SetDecl(d);
@@ -539,7 +550,8 @@ void FieldAccess::CheckType() {
             if (field->GetDecl()->IsVarDecl()) {
                 expr_type = field->GetDecl()->GetType();
             } else {
-                ReportError::IdentifierNotDeclared(field, LookingForVariable);
+                semantic_error = 1;
+                return;
             }
         }
         return;
@@ -550,7 +562,8 @@ void FieldAccess::CheckType() {
     Type *base_t = base->GetType();
     if (base_t != NULL) {
         if (!base_t->IsNamedType()) {
-            ReportError::FieldNotFoundInBase(field, base_t);
+            semantic_error = 1;
+            return;
             return;
         }
 
@@ -558,7 +571,8 @@ void FieldAccess::CheckType() {
                 dynamic_cast<NamedType*>(base_t)->GetId(), field);
 
         if (d == NULL || !d->IsVarDecl()) {
-            ReportError::FieldNotFoundInBase(field, base_t);
+            semantic_error = 1;
+            return;
         } else {//amir here we check the accessibility of the field. to include public private protected, change here
             // If base is 'this' or any instances of current class,
             // then all the private variable members are accessible.
@@ -570,7 +584,8 @@ void FieldAccess::CheckType() {
             if (!cur_class || !cur_class->IsClassDecl()) {
                 // not in a class scope, all the variable members are
                 // not accessible.
-                ReportError::InaccessibleField(field, base_t);
+                semantic_error = 1;
+                return;
                 return;
             }
             // in a class scope, the variable members can be
@@ -580,7 +595,8 @@ void FieldAccess::CheckType() {
                     dynamic_cast<NamedType*>(cur_t)->GetId(), field);
 
             if (d == NULL || !d->IsVarDecl()) {
-                ReportError::FieldNotFoundInBase(field, cur_t);
+                semantic_error = 1;
+                return;
                 return;
             }
             if (cur_t->IsCompatibleWith(base_t) ||
@@ -588,7 +604,8 @@ void FieldAccess::CheckType() {
                 field->SetDecl(d);
                 expr_type = d->GetType();
             } else {
-                ReportError::InaccessibleField(field, base_t);
+                semantic_error = 1;
+                return;
             }
         }
     }
@@ -645,7 +662,8 @@ void Call::CheckDecl() {
     if (!base) {
         Decl *d = symtab->Lookup(field);
         if (d == NULL || !d->IsFnDecl()) {
-            ReportError::IdentifierNotDeclared(field, LookingForFunction);
+            semantic_error = 1;
+            return;
             return;
         } else {
             field->SetDecl(d);
@@ -675,16 +693,19 @@ void Call::CheckType() {
                 // length must have no argument.
                 int n = actuals->NumElements();
                 if (n) {
-                    ReportError::NumArgsMismatch(field, 0, n);
+                    semantic_error = 1;
+                    return;
                 }
                 expr_type = Type::intType;
             } else if (!t->IsNamedType()) {
-                ReportError::FieldNotFoundInBase(field, t);
+                semantic_error = 1;
+                return;
             } else {
                 Decl *d = symtab->LookupField(
                         dynamic_cast<NamedType*>(t)->GetId(), field);
                 if (d == NULL || !d->IsFnDecl()) {
-                    ReportError::FieldNotFoundInBase(field, t);
+                    semantic_error = 1;
+                    return;
                 } else {
                     field->SetDecl(d);
                     expr_type = d->GetType();
@@ -705,14 +726,16 @@ void Call::CheckFuncArgs() {
     int n_expected = formals->NumElements();
     int n_given = actuals->NumElements();
     if (n_given != n_expected) {
-        ReportError::NumArgsMismatch(field, n_expected, n_given);
+        semantic_error = 1;
+        return;
     } else {
         for (int i = 0; i < actuals->NumElements(); i++) {
             Type *t_a = actuals->Nth(i)->GetType();
             Type *t_f = formals->Nth(i)->GetType();
 
             if (t_a && t_f && !t_f->IsCompatibleWith(t_a)) {
-                ReportError::ArgMismatch(actuals->Nth(i), i + 1, t_a, t_f);
+                semantic_error = 1;
+                return;
             }
         }
     }
@@ -853,7 +876,8 @@ void NewArrayExpr::CheckType() {
     if (t == NULL) {
         // some error accur in size, so skip it.
     } else if (t != Type::intType) {
-        ReportError::NewArraySizeNotInteger(size);
+        semantic_error = 1;
+        return;
     }
 
     elemType->Check(E_CheckType);
@@ -940,7 +964,8 @@ void PostfixExpr::CheckType() {
     if (t == NULL) {
         // some error accur in lvalue, so skip it.
     } else if (t != Type::intType) {
-        ReportError::IncompatibleOperand(op, t);
+        semantic_error = 1;
+        return;
     } else {
         expr_type = t;
     }

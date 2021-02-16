@@ -76,8 +76,8 @@ SINGLE_COMMENT    ("//"[^\n]*)
  /* -------------------- Comments ----------------------------- */
 {BEG_COMMENT}          { BEGIN(COMM); }
 <COMM>{END_COMMENT}    { BEGIN(N); }
-<COMM><<EOF>>          { ReportError::UntermComment();
-                         return 0; }
+<COMM><<EOF>>          { syntax_error = 1;
+                                 return 0; }
 <COMM>.                { /* ignore everything else that doesn't match */ }
 {SINGLE_COMMENT}       { /* skip to end of line for // comment */ }
 
@@ -135,19 +135,22 @@ SINGLE_COMMENT    ("//"[^\n]*)
                          return T_DoubleConstant; }
 {STRING}            { yylval.stringConstant = strdup(yytext);
                          return T_StringConstant; }
-{BEG_STRING}        { ReportError::UntermString(&yylloc, yytext); }
+{BEG_STRING}        { syntax_error = 1;
+                                                       return 0; }
 
 
  /* -------------------- Identifiers --------------------------- */
 {IDENTIFIER}        { if (strlen(yytext) > MaxIdentLen)
-                         ReportError::LongIdentifier(&yylloc, yytext);
+                         {syntax_error = 1;
+                          return 0;}
                        strncpy(yylval.identifier, yytext, MaxIdentLen);
                        yylval.identifier[MaxIdentLen] = '\0';
                        return T_Identifier; }
 
 
  /* -------------------- Default rule (error) -------------------- */
-.                   { ReportError::UnrecogChar(&yylloc, yytext[0]); }
+.                   { syntax_error = 1;
+                      return 0; }
 
 %%
 
