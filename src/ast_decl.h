@@ -74,14 +74,14 @@ class VariableDecl : public Decl
     Type * GetType() { return type; }
     bool IsVariableDecl() { return true; }
 
-    void BuildST();
+    void BuildSymTable();
     void Check(checkT c);
 
     // code generation
     void AssignOffset();
     void AssignMemberOffset(bool inClass, int offset);
     void Emit();
-    void SetEmitLoc(Location *l) { emit_loc = l; }
+    void SetEmitLoc(Location *l) { asm_loc = l; }
 };
 
 class ClassDecl : public Decl
@@ -104,7 +104,7 @@ class ClassDecl : public Decl
     void PrintChildren(int indentLevel);
 
     bool IsClassDecl() { return true; }
-    void BuildST();
+    void BuildSymTable();
     void Check(checkT c);
     bool IsChildOf(Decl *other);
     NamedType * GetExtends() { return extends; }
@@ -130,7 +130,7 @@ class InterfaceDecl : public Decl
     void PrintChildren(int indentLevel);
 
     bool IsInterfaceDecl() { return true; }
-    void BuildST();
+    void BuildSymTable();
     void Check(checkT c);
     List<Decl*> * GetMembers() { return members; }
 
@@ -159,7 +159,7 @@ class FunctionDecl : public Decl
     bool IsFunctionDecl() { return true; }
     bool IsEquivalentTo(Decl *fn);
 
-    void BuildST();
+    void BuildSymTable();
     void Check(checkT c);
 
     // code generation

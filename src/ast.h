@@ -57,8 +57,8 @@ class Node
   protected:
     yyltype *location;
     Node *parent;
-    Type *expr_type; // link to the type of each node (not for stmt)
-    Location *emit_loc;
+    Type *semantic_type; // link to the type of each node (not for stmt)
+    Location *asm_loc;
 
   public:
     Node(yyltype loc);
@@ -75,16 +75,16 @@ class Node
     void Print(int indentLevel, const char *label = NULL);
     virtual void PrintChildren(int indentLevel)  {}
 
-    virtual void BuildST() {}
+    virtual void BuildSymTable() {}
     virtual void Check(checkT c) {}
-    virtual Type * GetType() { return expr_type; }
+    virtual Type * GetType() { return semantic_type; }
     virtual bool IsLoopStmt() { return false; }
     virtual bool IsSwitchStmt() { return false; }
     virtual bool IsCaseStmt() { return false; }
 
     // code generation
     virtual void Emit() {}
-    virtual Location * GetEmitLoc() { return emit_loc; }
+    virtual Location * GetEmitLoc() { return asm_loc; }
 };
 
 

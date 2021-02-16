@@ -38,7 +38,7 @@ class Program : public Node
      const char *GetPrintNameForNode() { return "Program"; }
      void PrintChildren(int indentLevel);
 
-     void BuildST();
+     void BuildSymTable();
      void Check();
      void Check(checkT c) { Check(); }
 
@@ -64,7 +64,7 @@ class StmtBlock : public Stmt
     const char *GetPrintNameForNode() { return "StmtBlock"; }
     void PrintChildren(int indentLevel);
 
-    void BuildST();
+    void BuildSymTable();
     void Check(checkT c);
 
     // code generation
@@ -107,7 +107,7 @@ class ForStmt : public LoopStmt
     const char *GetPrintNameForNode() { return "ForStmt"; }
     void PrintChildren(int indentLevel);
 
-    void BuildST();
+    void BuildSymTable();
     void Check(checkT c);
 
     // code generation
@@ -124,7 +124,7 @@ class WhileStmt : public LoopStmt
     const char *GetPrintNameForNode() { return "WhileStmt"; }
     void PrintChildren(int indentLevel);
 
-    void BuildST();
+    void BuildSymTable();
     void Check(checkT c);
 
     // code generation
@@ -142,7 +142,7 @@ class IfStmt : public ConditionalStmt
     const char *GetPrintNameForNode() { return "IfStmt"; }
     void PrintChildren(int indentLevel);
 
-    void BuildST();
+    void BuildSymTable();
     void Check(checkT c);
 
     // code generation
@@ -174,7 +174,7 @@ class CaseStmt : public Stmt
     const char *GetPrintNameForNode() { return value ? "Case" : "Default"; }
     void PrintChildren(int indentLevel);
 
-    void BuildST();
+    void BuildSymTable();
     void Check(checkT c);
 
     // code generation
@@ -196,7 +196,7 @@ class SwitchStmt : public Stmt
     const char *GetPrintNameForNode() { return "SwitchStmt"; }
     void PrintChildren(int indentLevel);
 
-    void BuildST();
+    void BuildSymTable();
     void Check(checkT c);
 
     // code generation

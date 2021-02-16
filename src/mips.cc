@@ -30,7 +30,7 @@ static bool LocationsAreSame(Location *var1, Location *var2) {
     return (var1 == var2 ||
             (var1 && var2
              && !strcmp(var1->GetName(), var2->GetName())
-             && var1->GetSegment()  == var2->GetSegment()
+             && var1->GetSegment() == var2->GetSegment()
              && var1->GetOffset() == var2->GetOffset()));
 }
 
@@ -42,11 +42,11 @@ static bool LocationsAreSame(Location *var1, Location *var2) {
 void Mips::SpillRegister(Location *dst, Register reg) {
     Assert(dst);
     const char *offsetFromWhere = dst->GetSegment() == fpRelative
-        ? regs[fp].name : regs[gp].name;
+                                  ? regs[fp].name : regs[gp].name;
     Assert(dst->GetOffset() % 4 == 0); // all variables are 4 bytes in size
     Emit("sw %s, %d(%s)\t# spill %s from %s to %s%+d", regs[reg].name,
-            dst->GetOffset(), offsetFromWhere, dst->GetName(), regs[reg].name,
-            offsetFromWhere,dst->GetOffset());
+         dst->GetOffset(), offsetFromWhere, dst->GetName(), regs[reg].name,
+         offsetFromWhere, dst->GetOffset());
 }
 
 /* Method: FillRegister
@@ -57,11 +57,11 @@ void Mips::SpillRegister(Location *dst, Register reg) {
 void Mips::FillRegister(Location *src, Register reg) {
     Assert(src);
     const char *offsetFromWhere = src->GetSegment() == fpRelative
-        ? regs[fp].name : regs[gp].name;
+                                  ? regs[fp].name : regs[gp].name;
     Assert(src->GetOffset() % 4 == 0); // all variables are 4 bytes in size
     Emit("lw %s, %d(%s)\t# fill %s to %s from %s%+d", regs[reg].name,
-            src->GetOffset(), offsetFromWhere, src->GetName(), regs[reg].name,
-            offsetFromWhere,src->GetOffset());
+         src->GetOffset(), offsetFromWhere, src->GetName(), regs[reg].name,
+         offsetFromWhere, src->GetOffset());
 }
 
 /* Method: Emit
@@ -77,10 +77,20 @@ void Mips::Emit(const char *fmt, ...) {
     va_start(args, fmt);
     vsprintf(buf, fmt, args);
     va_end(args);
+
+    for (int i = 1023; i >= 0; i--) {
+//        if (buf[i] == '"')
+//            break;
+        if (buf[i] == '#' && buf[i+1]==' ') {
+            buf[i] = 0;
+            break;
+        }
+    }
+
     if (buf[strlen(buf) - 1] != ':') printf("\t"); // don't tab in labels
     if (buf[0] != '#') printf("  ");   // outdent comments a little
     printf("%s", buf);
-    if (buf[strlen(buf)-1] != '\n') printf("\n"); // end with a newline
+    if (buf[strlen(buf) - 1] != '\n') printf("\n"); // end with a newline
 }
 
 /* Method: EmitLoadConstant
@@ -92,7 +102,7 @@ void Mips::Emit(const char *fmt, ...) {
 void Mips::EmitLoadConstant(Location *dst, int val) {
     Register r = rd;
     Emit("li %s, %d\t\t# load constant value %d into %s", regs[r].name,
-            val, val, regs[r].name);
+         val, val, regs[r].name);
     SpillRegister(dst, rd);
 }
 
@@ -145,7 +155,7 @@ void Mips::EmitCopy(Location *dst, Location *src) {
 void Mips::EmitLoad(Location *dst, Location *reference, int offset) {
     FillRegister(reference, rs);
     Emit("lw %s, %d(%s) \t# load with offset", regs[rd].name,
-            offset, regs[rs].name);
+         offset, regs[rs].name);
     SpillRegister(dst, rd);
 }
 
@@ -161,7 +171,7 @@ void Mips::EmitStore(Location *reference, Location *value, int offset) {
     FillRegister(value, rs);
     FillRegister(reference, rd);
     Emit("sw %s, %d(%s) \t# store with offset",
-            regs[rs].name, offset, regs[rd].name);
+         regs[rs].name, offset, regs[rd].name);
 }
 
 /* Method: EmitBinaryOp
@@ -173,12 +183,11 @@ void Mips::EmitStore(Location *reference, Location *value, int offset) {
  * for the particular op code.
  */
 void Mips::EmitBinaryOp(BinaryOp::OpCode code, Location *dst,
-        Location *op1, Location *op2)
-{
+                        Location *op1, Location *op2) {
     FillRegister(op1, rs);
     FillRegister(op2, rt);
     Emit("%s %s, %s, %s\t", NameForTac(code), regs[rd].name,
-            regs[rs].name, regs[rt].name);
+         regs[rs].name, regs[rt].name);
     SpillRegister(dst, rd);
 }
 
@@ -214,7 +223,7 @@ void Mips::EmitGoto(const char *label) {
 void Mips::EmitIfZ(Location *test, const char *label) {
     FillRegister(test, rs);
     Emit("beqz %s, %s\t# branch if %s is zero ", regs[rs].name, label,
-            test->GetName());
+         test->GetName());
 }
 
 /* Method: EmitParam
@@ -242,10 +251,10 @@ void Mips::EmitParam(Location *arg) {
  * register.
  */
 void Mips::EmitCallInstr(Location *result, const char *fn, bool isLabel) {
-    Emit("%s %-15s\t# jump to function", isLabel? "jal": "jalr", fn);
+    Emit("%s %-15s\t# jump to function", isLabel ? "jal" : "jalr", fn);
     if (result != NULL) {
         Emit("move %s, %s\t\t# copy function return value from $v0",
-                regs[rd].name, regs[v0].name);
+             regs[rd].name, regs[v0].name);
         SpillRegister(result, rd);
     }
 }
@@ -288,7 +297,7 @@ void Mips::EmitReturn(Location *returnVal) {
     if (returnVal != NULL) {
         FillRegister(returnVal, rd);
         Emit("move $v0, %s\t\t# assign return value into $v0",
-                regs[rd].name);
+             regs[rd].name);
     }
     Emit("move $sp, $fp\t\t# pop callee frame off stack");
     Emit("lw $ra, -4($fp)\t# restore saved ra");
@@ -313,8 +322,8 @@ void Mips::EmitBeginFunction(int stackFrameSize) {
 
     if (stackFrameSize != 0)
         Emit(
-            "subu $sp, $sp, %d\t# decrement sp to make space for locals/temps",
-            stackFrameSize);
+                "subu $sp, $sp, %d\t# decrement sp to make space for locals/temps",
+                stackFrameSize);
 }
 
 
@@ -330,14 +339,13 @@ void Mips::EmitEndFunction() {
 }
 
 
-
 /* Method: EmitVTable
  * ------------------
  * Used to layout a vtable. Uses assembly directives to set up new
  * entry in data segment, emits label, and lays out the function
  * labels one after another.
  */
-void Mips::EmitVTable(const char *label, List<const char*> *methodLabels) {
+void Mips::EmitVTable(const char *label, List<const char *> *methodLabels) {
     Emit(".data");
     Emit(".align 2");
     Emit("%s:\t\t# label for class %s vtable", label, label);
@@ -366,7 +374,7 @@ void Mips::EmitPreamble() {
  * Asserts if asked for name of an unset/out of bounds code.
  */
 const char *Mips::NameForTac(BinaryOp::OpCode code) {
-    Assert(code >=0 && code < BinaryOp::NumOps);
+    Assert(code >= 0 && code < BinaryOp::NumOps);
     const char *name = mipsName[code];
     Assert(name != NULL);
     return name;
@@ -391,39 +399,41 @@ Mips::Mips() {
     mipsName[BinaryOp::Ge] = "sge";
     mipsName[BinaryOp::And] = "and";
     mipsName[BinaryOp::Or] = "or";
-    regs[zero] = (RegContents){false, NULL, "$zero", false};
-    regs[at] = (RegContents){false, NULL, "$at", false};
-    regs[v0] = (RegContents){false, NULL, "$v0", false};
-    regs[v1] = (RegContents){false, NULL, "$v1", false};
-    regs[a0] = (RegContents){false, NULL, "$a0", false};
-    regs[a1] = (RegContents){false, NULL, "$a1", false};
-    regs[a2] = (RegContents){false, NULL, "$a2", false};
-    regs[a3] = (RegContents){false, NULL, "$a3", false};
-    regs[k0] = (RegContents){false, NULL, "$k0", false};
-    regs[k1] = (RegContents){false, NULL, "$k1", false};
-    regs[gp] = (RegContents){false, NULL, "$gp", false};
-    regs[sp] = (RegContents){false, NULL, "$sp", false};
-    regs[fp] = (RegContents){false, NULL, "$fp", false};
-    regs[ra] = (RegContents){false, NULL, "$ra", false};
-    regs[t0] = (RegContents){false, NULL, "$t0", true};
-    regs[t1] = (RegContents){false, NULL, "$t1", true};
-    regs[t2] = (RegContents){false, NULL, "$t2", true};
-    regs[t3] = (RegContents){false, NULL, "$t3", true};
-    regs[t4] = (RegContents){false, NULL, "$t4", true};
-    regs[t5] = (RegContents){false, NULL, "$t5", true};
-    regs[t6] = (RegContents){false, NULL, "$t6", true};
-    regs[t7] = (RegContents){false, NULL, "$t7", true};
-    regs[t8] = (RegContents){false, NULL, "$t8", true};
-    regs[t9] = (RegContents){false, NULL, "$t9", true};
-    regs[s0] = (RegContents){false, NULL, "$s0", true};
-    regs[s1] = (RegContents){false, NULL, "$s1", true};
-    regs[s2] = (RegContents){false, NULL, "$s2", true};
-    regs[s3] = (RegContents){false, NULL, "$s3", true};
-    regs[s4] = (RegContents){false, NULL, "$s4", true};
-    regs[s5] = (RegContents){false, NULL, "$s5", true};
-    regs[s6] = (RegContents){false, NULL, "$s6", true};
-    regs[s7] = (RegContents){false, NULL, "$s7", true};
-    rs = t0; rt = t1; rd = t2;
+    regs[zero] = (RegContents) {false, NULL, "$zero", false};
+    regs[at] = (RegContents) {false, NULL, "$at", false};
+    regs[v0] = (RegContents) {false, NULL, "$v0", false};
+    regs[v1] = (RegContents) {false, NULL, "$v1", false};
+    regs[a0] = (RegContents) {false, NULL, "$a0", false};
+    regs[a1] = (RegContents) {false, NULL, "$a1", false};
+    regs[a2] = (RegContents) {false, NULL, "$a2", false};
+    regs[a3] = (RegContents) {false, NULL, "$a3", false};
+    regs[k0] = (RegContents) {false, NULL, "$k0", false};
+    regs[k1] = (RegContents) {false, NULL, "$k1", false};
+    regs[gp] = (RegContents) {false, NULL, "$gp", false};
+    regs[sp] = (RegContents) {false, NULL, "$sp", false};
+    regs[fp] = (RegContents) {false, NULL, "$fp", false};
+    regs[ra] = (RegContents) {false, NULL, "$ra", false};
+    regs[t0] = (RegContents) {false, NULL, "$t0", true};
+    regs[t1] = (RegContents) {false, NULL, "$t1", true};
+    regs[t2] = (RegContents) {false, NULL, "$t2", true};
+    regs[t3] = (RegContents) {false, NULL, "$t3", true};
+    regs[t4] = (RegContents) {false, NULL, "$t4", true};
+    regs[t5] = (RegContents) {false, NULL, "$t5", true};
+    regs[t6] = (RegContents) {false, NULL, "$t6", true};
+    regs[t7] = (RegContents) {false, NULL, "$t7", true};
+    regs[t8] = (RegContents) {false, NULL, "$t8", true};
+    regs[t9] = (RegContents) {false, NULL, "$t9", true};
+    regs[s0] = (RegContents) {false, NULL, "$s0", true};
+    regs[s1] = (RegContents) {false, NULL, "$s1", true};
+    regs[s2] = (RegContents) {false, NULL, "$s2", true};
+    regs[s3] = (RegContents) {false, NULL, "$s3", true};
+    regs[s4] = (RegContents) {false, NULL, "$s4", true};
+    regs[s5] = (RegContents) {false, NULL, "$s5", true};
+    regs[s6] = (RegContents) {false, NULL, "$s6", true};
+    regs[s7] = (RegContents) {false, NULL, "$s7", true};
+    rs = t0;
+    rt = t1;
+    rd = t2;
 }
 
 const char *Mips::mipsName[BinaryOp::NumOps];

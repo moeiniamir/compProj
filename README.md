@@ -29,7 +29,7 @@ The Decaf compiler also supports a debugging option `-d` with arguments such as 
 ```
 
 ## Multi-pass Lexical/Syntax/Semantic Analysis, IR Generation and Code Emission
-The compiler traverses source code and AST for multiple passes to perform lexical/syntax/semantic analysis, generate IR and emit MIPS assembly. The multi-pass analysis is implementated as `Program::BuildST()`, `Program::Check()` and `Program::Emit()` in `ast_stmt.cc`. 
+The compiler traverses source code and AST for multiple passes to perform lexical/syntax/semantic analysis, generate IR and emit MIPS assembly. The multi-pass analysis is implementated as `Program::BuildSymTable()`, `Program::Check()` and `Program::Emit()` in `ast_stmt.cc`. 
 * Pass 0: Traverse source code and build AST
   * The scanner and parser traverse source code and build the AST
   * The compiler reports all lexical errors and syntax errors in this pass

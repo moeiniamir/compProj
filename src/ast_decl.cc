@@ -13,7 +13,7 @@ Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
     Assert(n != NULL);
     (id=n)->SetParent(this);
     idx = -1;
-    expr_type = NULL;
+    semantic_type = NULL;
 }
 
 
@@ -24,8 +24,8 @@ VariableDecl::VariableDecl(Identifier *n, Type *t) : Decl(n) {
 }
 
 void VariableDecl::PrintChildren(int indentLevel) {
-   if (expr_type) std::cout << " <" << expr_type << ">";
-   if (emit_loc) emit_loc->Print();
+   if (semantic_type) std::cout << " <" << semantic_type << ">";
+   if (asm_loc) asm_loc->Print();
    if (class_member_ofst != -1)
        std::cout << " ~~[Ofst: " << class_member_ofst << "]";
    type->Print(indentLevel+1);
@@ -33,7 +33,7 @@ void VariableDecl::PrintChildren(int indentLevel) {
    if (id->GetDecl()) printf(" ........ {def}");
 }
 
-void VariableDecl::BuildST() {
+void VariableDecl::BuildSymTable() {
     if (symtab->LocalLookup(this->GetId())) {
         Decl *d = symtab->Lookup(this->GetId());
         semantic_error = 1;
@@ -48,7 +48,7 @@ void VariableDecl::CheckDecl() {
     type->Check(E_CheckDecl);
     id->Check(E_CheckDecl);
 
-    expr_type = type->GetType();
+    semantic_type = type->GetType();
 }
 
 void VariableDecl::Check(checkT c) {
@@ -63,7 +63,7 @@ void VariableDecl::Check(checkT c) {
 
 void VariableDecl::AssignOffset() {
     if (this->IsGlobal()) {
-        emit_loc = new Location(gpRelative, CG->GetNextGlobalLoc(),
+        asm_loc = new Location(gpRelative, CG->GetNextGlobalLoc(),
                 id->GetIdName());
     }
 }
@@ -71,7 +71,7 @@ void VariableDecl::AssignOffset() {
 void VariableDecl::AssignMemberOffset(bool inClass, int offset) {
     class_member_ofst = offset;
     // set location for var members of class.
-    emit_loc = new Location(fpRelative, offset, id->GetIdName(), CG->ThisPtr);
+    asm_loc = new Location(fpRelative, offset, id->GetIdName(), CG->ThisPtr);
 }
 
 void VariableDecl::Emit() {
@@ -80,9 +80,9 @@ void VariableDecl::Emit() {
         return;
     }
 
-    if (!emit_loc) {
+    if (!asm_loc) {
         // some auto variables.
-        emit_loc = new Location(fpRelative, CG->GetNextLocalLoc(),
+        asm_loc = new Location(fpRelative, CG->GetNextLocalLoc(),
                 id->GetIdName());
     }
 }
@@ -99,8 +99,8 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
 }
 
 void ClassDecl::PrintChildren(int indentLevel) {
-    if (expr_type) std::cout << " <" << expr_type << ">";
-    if (emit_loc) emit_loc->Print();
+    if (semantic_type) std::cout << " <" << semantic_type << ">";
+    if (asm_loc) asm_loc->Print();
     id->Print(indentLevel+1);
     if (id->GetDecl()) printf(" ........ {def}");
     if (extends) extends->Print(indentLevel+1, "(extends) ");
@@ -108,7 +108,7 @@ void ClassDecl::PrintChildren(int indentLevel) {
     members->PrintAll(indentLevel+1);
 }
 
-void ClassDecl::BuildST() {
+void ClassDecl::BuildSymTable() {
     if (symtab->LocalLookup(this->GetId())) {
         // if two local symbols have the same name, then report an error.
         Decl *d = symtab->Lookup(this->GetId());
@@ -128,7 +128,7 @@ void ClassDecl::BuildST() {
     for (int i = 0; i < implements->NumElements(); i++) {
         symtab->SetInterface(implements->Nth(i)->GetId()->GetIdName());
     }
-    members->BuildSTAll();
+    members->BuildSymTableAll();
     symtab->ExitScope();
 }
 
@@ -146,8 +146,8 @@ void ClassDecl::CheckDecl() {
     members->CheckAll(E_CheckDecl);
     symtab->ExitScope();
 
-    expr_type = new NamedType(id);
-    expr_type->SetSelfType();
+    semantic_type = new NamedType(id);
+    semantic_type->SetSelfType();
 }
 
 void ClassDecl::CheckInherit() {
@@ -385,14 +385,14 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
 }
 
 void InterfaceDecl::PrintChildren(int indentLevel) {
-    if (expr_type) std::cout << " <" << expr_type << ">";
-    if (emit_loc) emit_loc->Print();
+    if (semantic_type) std::cout << " <" << semantic_type << ">";
+    if (asm_loc) asm_loc->Print();
     id->Print(indentLevel+1);
     if (id->GetDecl()) printf(" ........ {def}");
     members->PrintAll(indentLevel+1);
 }
 
-void InterfaceDecl::BuildST() {
+void InterfaceDecl::BuildSymTable() {
     if (symtab->LocalLookup(this->GetId())) {
         Decl *d = symtab->Lookup(this->GetId());
         semantic_error = 1;
@@ -402,15 +402,15 @@ void InterfaceDecl::BuildST() {
         id->SetDecl(this);
     }
     symtab->BuildScope(this->GetId()->GetIdName());
-    members->BuildSTAll();
+    members->BuildSymTableAll();
     symtab->ExitScope();
 }
 
 void InterfaceDecl::Check(checkT c) {
     switch (c) {
         case E_CheckDecl:
-            expr_type = new NamedType(id);
-            expr_type->SetSelfType();
+            semantic_type = new NamedType(id);
+            semantic_type->SetSelfType();
             // fall through.
         default:
             id->Check(c);
@@ -439,8 +439,8 @@ void FunctionDecl::SetFunctionBody(Stmt *b) {
 }
 
 void FunctionDecl::PrintChildren(int indentLevel) {
-    if (expr_type) std::cout << " <" << expr_type << ">";
-    if (emit_loc) emit_loc->Print();
+    if (semantic_type) std::cout << " <" << semantic_type << ">";
+    if (asm_loc) asm_loc->Print();
     if (vtable_ofst != -1)
         std::cout << " ~~[VTable: " << vtable_ofst << "]";
     returnType->Print(indentLevel+1, "(return type) ");
@@ -450,7 +450,7 @@ void FunctionDecl::PrintChildren(int indentLevel) {
     if (body) body->Print(indentLevel+1, "(body) ");
 }
 
-void FunctionDecl::BuildST() {
+void FunctionDecl::BuildSymTable() {
     if (symtab->LocalLookup(this->GetId())) {
         Decl *d = symtab->Lookup(this->GetId());
         semantic_error = 1;
@@ -460,8 +460,8 @@ void FunctionDecl::BuildST() {
         id->SetDecl(this);
     }
     symtab->BuildScope();
-    formals->BuildSTAll();
-    if (body) body->BuildST(); // function body must be a StmtBlock.
+    formals->BuildSymTableAll();
+    if (body) body->BuildSymTable(); // function body must be a StmtBlock.
     symtab->ExitScope();
 }
 
@@ -481,7 +481,7 @@ void FunctionDecl::CheckDecl() {
         }
     }
 
-    expr_type = returnType->GetType();
+    semantic_type = returnType->GetType();
 }
 
 void FunctionDecl::Check(checkT c) {

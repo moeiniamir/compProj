@@ -31,7 +31,7 @@ class Type : public Node
     static Type *intType, *doubleType, *boolType, *voidType,
                 *nullType, *stringType, *errorType;
 
-    Type(yyltype loc) : Node(loc) { expr_type = NULL; }
+    Type(yyltype loc) : Node(loc) { semantic_type = NULL; }
     Type(const char *str);
 
     const char *GetPrintNameForNode() { return "Type"; }
@@ -51,7 +51,7 @@ class Type : public Node
     virtual bool IsArrayType() { return false; }
     void Check(checkT c);
     virtual void Check(checkT c, reasonT r) { Check(c); }
-    virtual void SetSelfType() { expr_type = this; }
+    virtual void SetSelfType() { semantic_type = this; }
 
     // code generation
     virtual int GetTypeSize() { return 4; }

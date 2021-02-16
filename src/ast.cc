@@ -75,7 +75,7 @@ bool Identifier::IsEquivalentTo(Identifier *other) {
 
 void Identifier::Emit() {
     if (decl)
-        emit_loc = decl->GetEmitLoc();
+        asm_loc = decl->GetEmitLoc();
 }
 
 void Identifier::AddPrefix(const char *prefix) {

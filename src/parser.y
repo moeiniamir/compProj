@@ -184,7 +184,7 @@ DeclList
       Program *program = new Program($1);
       // if no errors, advance to next phase
       if (syntax_error == 0)
-	  program->BuildST();
+	  program->BuildSymTable();
       else{
 	  printf("syntax error");
 	  return 1;
