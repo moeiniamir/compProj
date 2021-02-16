@@ -18,15 +18,15 @@ void Program::PrintChildren(int indentLevel) {
     printf("\n");
 }
 
-void Program::BuildST() {
+void Program::BuildSymTable() {
     if (IsDebugOn("ast")) { this->Print(0); }
     symtab = new SymbolTable();
 
     /* Pass 1: Traverse the AST and build the symbol table. Report the
      * errors of declaration conflict in any local scopes. */
-    decls->BuildSTAll();
+    decls->BuildSymTableAll();
     if (IsDebugOn("st")) { symtab->Print(); }
-    PrintDebug("ast+", "BuildST finished.");
+    PrintDebug("ast+", "BuildSymTable finished.");
     if (IsDebugOn("ast+")) { this->Print(0); }
 }
 
@@ -120,10 +120,10 @@ void StmtBlock::PrintChildren(int indentLevel) {
     stmts->PrintAll(indentLevel+1);
 }
 
-void StmtBlock::BuildST() {
+void StmtBlock::BuildSymTable() {
     symtab->BuildScope();
-    decls->BuildSTAll();
-    stmts->BuildSTAll();
+    decls->BuildSymTableAll();
+    stmts->BuildSymTableAll();
     symtab->ExitScope();
 }
 
@@ -158,9 +158,9 @@ void ForStmt::PrintChildren(int indentLevel) {
     body->Print(indentLevel+1, "(body) ");
 }
 
-void ForStmt::BuildST() {
+void ForStmt::BuildSymTable() {
     symtab->BuildScope();
-    body->BuildST();
+    body->BuildSymTable();
     symtab->ExitScope();
 }
 
@@ -214,9 +214,9 @@ void WhileStmt::PrintChildren(int indentLevel) {
     body->Print(indentLevel+1, "(body) ");
 }
 
-void WhileStmt::BuildST() {
+void WhileStmt::BuildSymTable() {
     symtab->BuildScope();
-    body->BuildST();
+    body->BuildSymTable();
     symtab->ExitScope();
 }
 
@@ -271,13 +271,13 @@ void IfStmt::PrintChildren(int indentLevel) {
     if (elseBody) elseBody->Print(indentLevel+1, "(else) ");
 }
 
-void IfStmt::BuildST() {
+void IfStmt::BuildSymTable() {
     symtab->BuildScope();
-    body->BuildST();
+    body->BuildSymTable();
     symtab->ExitScope();
     if (elseBody) {
         symtab->BuildScope();
-        elseBody->BuildST();
+        elseBody->BuildSymTable();
         symtab->ExitScope();
     }
 }
@@ -374,9 +374,9 @@ void CaseStmt::PrintChildren(int indentLevel) {
     stmts->PrintAll(indentLevel+1);
 }
 
-void CaseStmt::BuildST() {
+void CaseStmt::BuildSymTable() {
     symtab->BuildScope();
-    stmts->BuildSTAll();
+    stmts->BuildSymTableAll();
     symtab->ExitScope();
 }
 
@@ -408,9 +408,9 @@ void SwitchStmt::PrintChildren(int indentLevel) {
     cases->PrintAll(indentLevel+1);
 }
 
-void SwitchStmt::BuildST() {
+void SwitchStmt::BuildSymTable() {
     symtab->BuildScope();
-    cases->BuildSTAll();
+    cases->BuildSymTableAll();
     symtab->ExitScope();
 }
 

@@ -30,8 +30,8 @@ class Type; // for NewArray
 class Expr : public Stmt
 {
   public:
-    Expr(yyltype loc) : Stmt(loc) { expr_type = NULL; }
-    Expr() : Stmt() { expr_type = NULL; }
+    Expr(yyltype loc) : Stmt(loc) { semantic_type = NULL; }
+    Expr() : Stmt() { semantic_type = NULL; }
 
     // code generation
     virtual Location * GetEmitLocDeref() { return GetEmitLoc(); }

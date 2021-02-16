@@ -82,9 +82,9 @@ template<class Element> class List {
              Nth(i)->Print(indentLevel, label); }
 
         // Build symbol table from all the elements of a list.
-    void BuildSTAll()
+    void BuildSymTableAll()
         { for (int i = 0; i < NumElements(); i++)
-             Nth(i)->BuildST(); }
+             Nth(i)->BuildSymTable(); }
         // Check all the elements of a list.
     void CheckAll(checkT c)
         { for (int i = 0; i < NumElements(); i++)

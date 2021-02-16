@@ -10,13 +10,13 @@
 #include "errors.h"
 
 void EmptyExpr::PrintChildren(int indentLevel) {
-    if (expr_type) std::cout << " <" << expr_type << ">";
-    if (emit_loc) emit_loc->Print();
+    if (semantic_type) std::cout << " <" << semantic_type << ">";
+    if (asm_loc) asm_loc->Print();
 }
 
 void EmptyExpr::Check(checkT c) {
     if (c == E_CheckType) {
-        expr_type = Type::voidType;
+        semantic_type = Type::voidType;
     }
 }
 
@@ -25,18 +25,18 @@ IntLiteral::IntLiteral(yyltype loc, int val) : Expr(loc) {
 }
 void IntLiteral::PrintChildren(int indentLevel) {
     printf("%d", value);
-    if (expr_type) std::cout << " <" << expr_type << ">";
-    if (emit_loc) emit_loc->Print();
+    if (semantic_type) std::cout << " <" << semantic_type << ">";
+    if (asm_loc) asm_loc->Print();
 }
 
 void IntLiteral::Check(checkT c) {
     if (c == E_CheckDecl) {
-        expr_type = Type::intType;
+        semantic_type = Type::intType;
     }
 }
 
 void IntLiteral::Emit() {
-    emit_loc = CG->GenLoadConstant(value);
+    asm_loc = CG->GenLoadConstant(value);
 }
 
 DoubleLiteral::DoubleLiteral(yyltype loc, double val) : Expr(loc) {
@@ -44,13 +44,13 @@ DoubleLiteral::DoubleLiteral(yyltype loc, double val) : Expr(loc) {
 }
 void DoubleLiteral::PrintChildren(int indentLevel) {
     printf("%g", value);
-    if (expr_type) std::cout << " <" << expr_type << ">";
-    if (emit_loc) emit_loc->Print();
+    if (semantic_type) std::cout << " <" << semantic_type << ">";
+    if (asm_loc) asm_loc->Print();
 }
 
 void DoubleLiteral::Check(checkT c) {
     if (c == E_CheckDecl) {
-        expr_type = Type::doubleType;
+        semantic_type = Type::doubleType;
     }
 }
 
@@ -65,18 +65,18 @@ BoolLiteral::BoolLiteral(yyltype loc, bool val) : Expr(loc) {
 }
 void BoolLiteral::PrintChildren(int indentLevel) {
     printf("%s", value ? "true" : "false");
-    if (expr_type) std::cout << " <" << expr_type << ">";
-    if (emit_loc) emit_loc->Print();
+    if (semantic_type) std::cout << " <" << semantic_type << ">";
+    if (asm_loc) asm_loc->Print();
 }
 
 void BoolLiteral::Check(checkT c) {
     if (c == E_CheckDecl) {
-        expr_type = Type::boolType;
+        semantic_type = Type::boolType;
     }
 }
 
 void BoolLiteral::Emit() {
-    emit_loc = CG->GenLoadConstant(value ? 1 : 0);
+    asm_loc = CG->GenLoadConstant(value ? 1 : 0);
 }
 
 StringLiteral::StringLiteral(yyltype loc, const char *val) : Expr(loc) {
@@ -85,33 +85,33 @@ StringLiteral::StringLiteral(yyltype loc, const char *val) : Expr(loc) {
 }
 void StringLiteral::PrintChildren(int indentLevel) {
     printf("%s",value);
-    if (expr_type) std::cout << " <" << expr_type << ">";
-    if (emit_loc) emit_loc->Print();
+    if (semantic_type) std::cout << " <" << semantic_type << ">";
+    if (asm_loc) asm_loc->Print();
 }
 
 void StringLiteral::Check(checkT c) {
     if (c == E_CheckDecl) {
-        expr_type = Type::stringType;
+        semantic_type = Type::stringType;
     }
 }
 
 void StringLiteral::Emit() {
-    emit_loc = CG->GenLoadConstant(value);
+    asm_loc = CG->GenLoadConstant(value);
 }
 
 void NullLiteral::PrintChildren(int indentLevel) {
-    if (expr_type) std::cout << " <" << expr_type << ">";
-    if (emit_loc) emit_loc->Print();
+    if (semantic_type) std::cout << " <" << semantic_type << ">";
+    if (asm_loc) asm_loc->Print();
 }
 
 void NullLiteral::Check(checkT c) {
     if (c == E_CheckDecl) {
-        expr_type = Type::nullType;
+        semantic_type = Type::nullType;
     }
 }
 
 void NullLiteral::Emit() {
-    emit_loc = CG->GenLoadConstant(0);
+    asm_loc = CG->GenLoadConstant(0);
 }
 
 Operator::Operator(yyltype loc, const char *tok) : Node(loc) {
@@ -140,8 +140,8 @@ CompoundExpr::CompoundExpr(Operator *o, Expr *r)
 }
 
 void CompoundExpr::PrintChildren(int indentLevel) {
-    if (expr_type) std::cout << " <" << expr_type << ">";
-    if (emit_loc) emit_loc->Print();
+    if (semantic_type) std::cout << " <" << semantic_type << ">";
+    if (asm_loc) asm_loc->Print();
     if (left) left->Print(indentLevel+1);
     op->Print(indentLevel+1);
     right->Print(indentLevel+1);
@@ -159,9 +159,9 @@ void ArithmeticExpr::CheckType() {
             return;
         }
         if (tr == Type::intType) {
-            expr_type = Type::intType;
+            semantic_type = Type::intType;
         } else if (tr == Type::doubleType) {
-            expr_type = Type::doubleType;
+            semantic_type = Type::doubleType;
         } else {
             semantic_error = 1;
     return;
@@ -174,11 +174,11 @@ void ArithmeticExpr::CheckType() {
             return;
         }
         if (tl == Type::intType && tr == Type::intType) {
-            expr_type = Type::intType;
+            semantic_type = Type::intType;
         } else if ((tl == Type::doubleType && tr == Type::doubleType)
                 // && strcmp(op->GetOpStr(), "%") // % can apply to float.
                 ) {
-            expr_type = Type::doubleType;
+            semantic_type = Type::doubleType;
         } else {
             semantic_error = 1;
     return;
@@ -201,7 +201,7 @@ void ArithmeticExpr::Emit() {
     right->Emit();
 
     Location *l = left ? left->GetEmitLocDeref() : CG->GenLoadConstant(0);
-    emit_loc = CG->GenBinaryOp(op->GetOpStr(), l, right->GetEmitLocDeref());
+    asm_loc = CG->GenBinaryOp(op->GetOpStr(), l, right->GetEmitLocDeref());
 }
 
 void RelationalExpr::CheckType() {
@@ -210,7 +210,7 @@ void RelationalExpr::CheckType() {
     right->Check(E_CheckType);
 
     // the type of RelationalExpr is always boolType.
-    expr_type = Type::boolType;
+    semantic_type = Type::boolType;
 
     Type *tl = left->GetType();
     Type *tr = right->GetType();
@@ -241,7 +241,7 @@ void RelationalExpr::Emit() {
     left->Emit();
     right->Emit();
 
-    emit_loc = CG->GenBinaryOp(op->GetOpStr(), left->GetEmitLocDeref(),
+    asm_loc = CG->GenBinaryOp(op->GetOpStr(), left->GetEmitLocDeref(),
             right->GetEmitLocDeref());
 }
 
@@ -254,7 +254,7 @@ void EqualityExpr::CheckType() {
     Type *tr = right->GetType();
 
     // the type of EqualityExpr is always boolType.
-    expr_type = Type::boolType;
+    semantic_type = Type::boolType;
 
     if (tl == NULL || tr == NULL) {
         // some error accur in left or right, so skip it.
@@ -285,20 +285,20 @@ void EqualityExpr::Emit() {
     Type *tr = right->GetType();
 
     if (tl == tr && (tl == Type::intType || tl == Type::boolType)) {
-        emit_loc = CG->GenBinaryOp(op->GetOpStr(), left->GetEmitLocDeref(),
+        asm_loc = CG->GenBinaryOp(op->GetOpStr(), left->GetEmitLocDeref(),
                 right->GetEmitLocDeref());
     } else if (tl == tr && tl == Type::stringType) {
-        emit_loc = CG->GenBuiltInCall(StringEqual, left->GetEmitLocDeref(),
+        asm_loc = CG->GenBuiltInCall(StringEqual, left->GetEmitLocDeref(),
                 right->GetEmitLocDeref());
         if (!strcmp(op->GetOpStr(), "!=")) {
             // for s1 != s2, generate s1 == s2, then generate logical not.
-            emit_loc = CG->GenBinaryOp("==", CG->GenLoadConstant(0),
-                emit_loc);
+            asm_loc = CG->GenBinaryOp("==", CG->GenLoadConstant(0),
+                asm_loc);
         }
     } else {
         // array? class? interface?
         // just compare the reference.
-        emit_loc = CG->GenBinaryOp(op->GetOpStr(), left->GetEmitLocDeref(),
+        asm_loc = CG->GenBinaryOp(op->GetOpStr(), left->GetEmitLocDeref(),
                 right->GetEmitLocDeref());
     }
 }
@@ -309,7 +309,7 @@ void LogicalExpr::CheckType() {
     right->Check(E_CheckType);
 
     // the type of LogicalExpr is always boolType.
-    expr_type = Type::boolType;
+    semantic_type = Type::boolType;
 
     if (!strcmp(op->GetOpStr(), "!")) {
         Type *tr = right->GetType();
@@ -350,11 +350,11 @@ void LogicalExpr::Emit() {
     right->Emit();
 
     if (left) {
-        emit_loc = CG->GenBinaryOp(op->GetOpStr(), left->GetEmitLocDeref(),
+        asm_loc = CG->GenBinaryOp(op->GetOpStr(), left->GetEmitLocDeref(),
                 right->GetEmitLocDeref());
     } else {
         // use 0 == bool_var to compute !bool_var.
-        emit_loc = CG->GenBinaryOp("==", CG->GenLoadConstant(0),
+        asm_loc = CG->GenBinaryOp("==", CG->GenLoadConstant(0),
                 right->GetEmitLocDeref());
     }
 }
@@ -402,12 +402,12 @@ void AssignExpr::Emit() {
         } else {
             CG->GenAssign(l, r);
         }
-        emit_loc = left->GetEmitLocDeref();
+        asm_loc = left->GetEmitLocDeref();
     }
 }
 
 void This::PrintChildren(int indentLevel) {
-    if (expr_type) std::cout << " <" << expr_type << ">";
+    if (semantic_type) std::cout << " <" << semantic_type << ">";
 }
 
 void This::CheckType() {
@@ -417,8 +417,8 @@ void This::CheckType() {
     return;
     } else {
         // Note: here create a new NamedType for 'this'.
-        expr_type = new NamedType(d->GetId());
-        expr_type->SetSelfType();
+        semantic_type = new NamedType(d->GetId());
+        semantic_type->SetSelfType();
     }
 }
 
@@ -429,7 +429,7 @@ void This::Check(checkT c) {
 }
 
 void This::Emit() {
-    emit_loc = CG->ThisPtr;
+    asm_loc = CG->ThisPtr;
 }
 
 ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
@@ -438,8 +438,8 @@ ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
 }
 
 void ArrayAccess::PrintChildren(int indentLevel) {
-    if (expr_type) std::cout << " <" << expr_type << ">";
-    if (emit_loc) emit_loc->Print();
+    if (semantic_type) std::cout << " <" << semantic_type << ">";
+    if (asm_loc) asm_loc->Print();
     base->Print(indentLevel+1);
     subscript->Print(indentLevel+1, "(subscript) ");
 }
@@ -470,7 +470,7 @@ void ArrayAccess::CheckType() {
 
     if (!err) {
         // the error of subscript will not affect the type of array access.
-        expr_type = (dynamic_cast<ArrayType*>(t))->GetElemType();
+        semantic_type = (dynamic_cast<ArrayType*>(t))->GetElemType();
     }
 }
 
@@ -502,14 +502,14 @@ void ArrayAccess::Emit() {
     CG->GenBuiltInCall(Halt);
     CG->GenLabel(l);
 
-    Location *t9 = CG->GenLoadConstant(expr_type->GetTypeSize());
+    Location *t9 = CG->GenLoadConstant(semantic_type->GetTypeSize());
     Location *t10 = CG->GenBinaryOp("*", t9, t0);
     Location *t11 = CG->GenBinaryOp("+", t3, t10);
-    emit_loc = t11;
+    asm_loc = t11;
 }
 
 Location * ArrayAccess::GetEmitLocDeref() {
-    Location *t = CG->GenLoad(emit_loc, 0);
+    Location *t = CG->GenLoad(asm_loc, 0);
     return t;
 }
 
@@ -522,8 +522,8 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
 }
 
 void FieldAccess::PrintChildren(int indentLevel) {
-    if (expr_type) std::cout << " <" << expr_type << ">";
-    if (emit_loc) emit_loc->Print();
+    if (semantic_type) std::cout << " <" << semantic_type << ">";
+    if (asm_loc) asm_loc->Print();
     if (base) base->Print(indentLevel+1);
     field->Print(indentLevel+1);
 }
@@ -548,7 +548,7 @@ void FieldAccess::CheckType() {
     if (!base) {
         if (field->GetDecl()) {
             if (field->GetDecl()->IsVariableDecl()) {
-                expr_type = field->GetDecl()->GetType();
+                semantic_type = field->GetDecl()->GetType();
             } else {
                 semantic_error = 1;
     return;
@@ -602,7 +602,7 @@ void FieldAccess::CheckType() {
             if (cur_t->IsCompatibleWith(base_t) ||
                     base_t->IsCompatibleWith(cur_t)) {
                 field->SetDecl(d);
-                expr_type = d->GetType();
+                semantic_type = d->GetType();
             } else {
                 semantic_error = 1;
     return;
@@ -625,16 +625,16 @@ void FieldAccess::Check(checkT c) {
 void FieldAccess::Emit() {
     if (base) base->Emit();
     field->Emit();
-    emit_loc = field->GetEmitLocDeref();
+    asm_loc = field->GetEmitLocDeref();
 
     // can access a var member in a class scope, so set the base.
     if (base)
-        emit_loc = new Location(fpRelative, emit_loc->GetOffset(),
-                emit_loc->GetName(), base->GetEmitLocDeref());
+        asm_loc = new Location(fpRelative, asm_loc->GetOffset(),
+                asm_loc->GetName(), base->GetEmitLocDeref());
 }
 
 Location * FieldAccess::GetEmitLocDeref() {
-    Location *t = emit_loc;
+    Location *t = asm_loc;
     if (t->GetBase() != NULL) {
         // this or some class instances.
         t = CG->GenLoad(t->GetBase(), t->GetOffset());
@@ -651,8 +651,8 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
 }
 
 void Call::PrintChildren(int indentLevel) {
-    if (expr_type) std::cout << " <" << expr_type << ">";
-    if (emit_loc) emit_loc->Print();
+    if (semantic_type) std::cout << " <" << semantic_type << ">";
+    if (asm_loc) asm_loc->Print();
     if (base) base->Print(indentLevel+1);
     field->Print(indentLevel+1);
     actuals->PrintAll(indentLevel+1, "(actuals) ");
@@ -667,8 +667,8 @@ void Call::CheckDecl() {
             return;
         } else {
             field->SetDecl(d);
-            // if function is defined after this, here expr_type is NULL.
-            expr_type = d->GetType();
+            // if function is defined after this, here semantic_type is NULL.
+            semantic_type = d->GetType();
         }
     } else {
         // if has base, then leave the work to CheckType.
@@ -679,9 +679,9 @@ void Call::CheckDecl() {
 
 void Call::CheckType() {
     if (!base) {
-        if (field->GetDecl() && !expr_type) {
-            // if function is defined after this, then assign expr_type again.
-            expr_type = field->GetDecl()->GetType();
+        if (field->GetDecl() && !semantic_type) {
+            // if function is defined after this, then assign semantic_type again.
+            semantic_type = field->GetDecl()->GetType();
         }
     } else {
         // must check the base expr's class type, and find in that class.
@@ -696,7 +696,7 @@ void Call::CheckType() {
                     semantic_error = 1;
     return;
                 }
-                expr_type = Type::intType;
+                semantic_type = Type::intType;
             } else if (!t->IsNamedType()) {
                 semantic_error = 1;
     return;
@@ -708,7 +708,7 @@ void Call::CheckType() {
     return;
                 } else {
                     field->SetDecl(d);
-                    expr_type = d->GetType();
+                    semantic_type = d->GetType();
                 }
             }
         }
@@ -765,7 +765,7 @@ void Call::Emit() {
             !strcmp(field->GetIdName(), "length")) {
         Location *t0 = base->GetEmitLocDeref();
         Location *t1 = CG->GenLoad(t0, -4);
-        emit_loc = t1;
+        asm_loc = t1;
         return;
     }
 
@@ -798,14 +798,14 @@ void Call::Emit() {
         // Push this.
         CG->GenPushParam(this_loc);
         // ACall
-        emit_loc = CG->GenACall(t, fn->HasReturnValue());
+        asm_loc = CG->GenACall(t, fn->HasReturnValue());
         // PopParams
         CG->GenPopParams(actuals->NumElements() * 4 + 4);
     } else {
         // LCall
         field->AddPrefix("_"); // main?
-        emit_loc = CG->GenLCall(field->GetIdName(),
-                expr_type != Type::voidType);
+        asm_loc = CG->GenLCall(field->GetIdName(),
+                semantic_type != Type::voidType);
         // PopParams
         CG->GenPopParams(actuals->NumElements() * 4);
     }
@@ -817,8 +817,8 @@ NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) {
 }
 
 void NewExpr::PrintChildren(int indentLevel) {
-    if (expr_type) std::cout << " <" << expr_type << ">";
-    if (emit_loc) emit_loc->Print();
+    if (semantic_type) std::cout << " <" << semantic_type << ">";
+    if (asm_loc) asm_loc->Print();
     cType->Print(indentLevel+1);
 }
 
@@ -830,7 +830,7 @@ void NewExpr::CheckType() {
     cType->Check(E_CheckType);
     // cType is NamedType.
     if (cType->GetType()) { // correct cType
-        expr_type = cType;
+        semantic_type = cType;
     }
 }
 
@@ -850,9 +850,9 @@ void NewExpr::Emit() {
     Assert(d);
     int size = d->GetInstanceSize();
     Location *t = CG->GenLoadConstant(size);
-    emit_loc = CG->GenBuiltInCall(Alloc, t);
+    asm_loc = CG->GenBuiltInCall(Alloc, t);
     Location *l = CG->GenLoadLabel(d->GetId()->GetIdName());
-    CG->GenStore(emit_loc, l, 0);
+    CG->GenStore(asm_loc, l, 0);
 }
 
 NewArrayExpr::NewArrayExpr(yyltype loc, Expr *sz, Type *et) : Expr(loc) {
@@ -862,8 +862,8 @@ NewArrayExpr::NewArrayExpr(yyltype loc, Expr *sz, Type *et) : Expr(loc) {
 }
 
 void NewArrayExpr::PrintChildren(int indentLevel) {
-    if (expr_type) std::cout << " <" << expr_type << ">";
-    if (emit_loc) emit_loc->Print();
+    if (semantic_type) std::cout << " <" << semantic_type << ">";
+    if (asm_loc) asm_loc->Print();
     size->Print(indentLevel+1);
     elemType->Print(indentLevel+1);
 }
@@ -886,8 +886,8 @@ void NewArrayExpr::CheckType() {
         return;
     } else {
         // the error size will not affect the type of new array.
-        expr_type = new ArrayType(*location, elemType);
-        expr_type->Check(E_CheckDecl);
+        semantic_type = new ArrayType(*location, elemType);
+        semantic_type->Check(E_CheckDecl);
     }
 }
 
@@ -920,27 +920,27 @@ void NewArrayExpr::Emit() {
     Location *t8 = CG->GenBuiltInCall(Alloc, t7);
     CG->GenStore(t8, t0);
     Location *t9 = CG->GenBinaryOp("+", t8, t6);
-    emit_loc = t9;
+    asm_loc = t9;
 }
 
 void ReadIntegerExpr::Check(checkT c) {
     if (c == E_CheckType) {
-        expr_type = Type::intType;
+        semantic_type = Type::intType;
     }
 }
 
 void ReadIntegerExpr::Emit() {
-    emit_loc = CG->GenBuiltInCall(ReadInteger);
+    asm_loc = CG->GenBuiltInCall(ReadInteger);
 }
 
 void ReadLineExpr::Check(checkT c) {
     if (c == E_CheckType) {
-        expr_type = Type::stringType;
+        semantic_type = Type::stringType;
     }
 }
 
 void ReadLineExpr::Emit() {
-    emit_loc = CG->GenBuiltInCall(ReadLine);
+    asm_loc = CG->GenBuiltInCall(ReadLine);
 }
 
 PostfixExpr::PostfixExpr(LValue *lv, Operator *o)
@@ -951,8 +951,8 @@ PostfixExpr::PostfixExpr(LValue *lv, Operator *o)
 }
 
 void PostfixExpr::PrintChildren(int indentLevel) {
-    if (expr_type) std::cout << " <" << expr_type << ">";
-    if (emit_loc) emit_loc->Print();
+    if (semantic_type) std::cout << " <" << semantic_type << ">";
+    if (asm_loc) asm_loc->Print();
     lvalue->Print(indentLevel+1);
     op->Print(indentLevel+1);
 }
@@ -967,7 +967,7 @@ void PostfixExpr::CheckType() {
         semantic_error = 1;
     return;
     } else {
-        expr_type = t;
+        semantic_type = t;
     }
 }
 
@@ -1004,6 +1004,6 @@ void PostfixExpr::Emit() {
     }
 
     // the value of postfix expr is its original lvalue.
-    emit_loc = t0;
+    asm_loc = t0;
 }
 

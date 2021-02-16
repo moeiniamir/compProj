@@ -27,13 +27,13 @@ Type *Type::errorType  = new Type("error");
 Type::Type(const char *n) {
     Assert(n);
     typeName = strdup(n);
-    expr_type = NULL;
+    semantic_type = NULL;
 }
 
 void Type::PrintChildren(int indentLevel) {
     printf("%s", typeName);
-    if (expr_type) std::cout << " <" << expr_type << ">";
-    if (emit_loc) emit_loc->Print();
+    if (semantic_type) std::cout << " <" << semantic_type << ">";
+    if (asm_loc) asm_loc->Print();
 }
 
 void Type::Check(checkT c) {
@@ -45,7 +45,7 @@ void Type::Check(checkT c) {
         Type::nullType->SetSelfType();
         Type::stringType->SetSelfType();
         Type::errorType->SetSelfType();
-        expr_type = this;
+        semantic_type = this;
     }
 }
 
@@ -55,8 +55,8 @@ NamedType::NamedType(Identifier *i) : Type(*i->GetLocation()) {
 }
 
 void NamedType::PrintChildren(int indentLevel) {
-    if (expr_type) std::cout << " <" << expr_type << ">";
-    if (emit_loc) emit_loc->Print();
+    if (semantic_type) std::cout << " <" << semantic_type << ">";
+    if (asm_loc) asm_loc->Print();
     id->Print(indentLevel+1);
 }
 
@@ -73,7 +73,7 @@ void NamedType::CheckDecl(reasonT r) {
         return;
     } else {
         this->id->SetDecl(d);
-        expr_type = this;
+        semantic_type = this;
     }
 }
 
@@ -128,15 +128,15 @@ ArrayType::ArrayType(yyltype loc, Type *et) : Type(loc) {
     (elemType=et)->SetParent(this);
 }
 void ArrayType::PrintChildren(int indentLevel) {
-    if (expr_type) std::cout << " <" << expr_type << ">";
-    if (emit_loc) emit_loc->Print();
+    if (semantic_type) std::cout << " <" << semantic_type << ">";
+    if (asm_loc) asm_loc->Print();
     elemType->Print(indentLevel+1);
 }
 
 void ArrayType::CheckDecl() {
     elemType->Check(E_CheckDecl);
     if (elemType->GetType()) {
-        expr_type = this;
+        semantic_type = this;
     }
 }
 
