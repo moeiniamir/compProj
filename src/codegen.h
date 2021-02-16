@@ -16,11 +16,16 @@
 
 #include <cstdlib>
 #include <list>
-#include "tac.h"
+#include "ds.h" // for VTable
 
 // These codes are used to identify the built-in functions
 typedef enum { Alloc, ReadLine, ReadInteger, StringEqual,
                PrintInt, PrintString, PrintBool, Halt, NumBuiltIns } BuiltIn;
+
+class Location;
+class Mips;
+class Instruction;
+class BeginFunc;
 
 class CodeGenerator {
   private:
@@ -169,6 +174,321 @@ class CodeGenerator {
     // but instead just print the untranslated Tac. It may be
     // useful in debugging to first make sure your Tac is correct.
     void DoFinalCodeGen();
+};
+
+// TAC Code
+
+typedef enum {fpRelative, gpRelative} Segment;
+
+class Location
+{
+protected:
+    const char *variableName;
+    Segment segment;
+    int offset;
+    Location* base;
+
+public:
+    Location(Segment seg, int offset, const char *name);
+    Location(Segment seg, int offset, const char *name, Location *base);
+
+    const char *GetName() const     { return variableName; }
+    Segment GetSegment() const      { return segment; }
+    int GetOffset() const           { return offset; }
+    Location* GetBase() const       { return base; }
+
+
+};
+
+// base class from which all Tac instructions derived
+// has the interface for the 2 polymorphic messages: Print & Emit
+
+class Instruction {
+protected:
+    char printed[128];
+
+public:
+    virtual void EmitSpecific(Mips *mips) = 0;
+    void Emit(Mips *mips);
+};
+
+// for convenience, the instruction classes are listed here.
+// the interfaces for the classes follows below
+
+class LoadConstant;
+class LoadStringLiteral;
+class LoadLabel;
+class Assign;
+class Load;
+class Store;
+class BinaryOp;
+class Label;
+class Goto;
+class IfZ;
+class BeginFunc;
+class EndFunc;
+class Return;
+class PushParam;
+class PopParams;
+class LCall;
+class ACall;
+class VTable;
+
+class LoadConstant: public Instruction
+{
+    Location *dst;
+    int val;
+public:
+    LoadConstant(Location *dst, int val);
+    void EmitSpecific(Mips *mips);
+};
+
+class LoadStringLiteral: public Instruction
+{
+    Location *dst;
+    char *str;
+public:
+    LoadStringLiteral(Location *dst, const char *s);
+    void EmitSpecific(Mips *mips);
+};
+
+class LoadLabel: public Instruction
+{
+    Location *dst;
+    const char *label;
+public:
+    LoadLabel(Location *dst, const char *label);
+    void EmitSpecific(Mips *mips);
+};
+
+class Assign: public Instruction
+{
+    Location *dst, *src;
+public:
+    Assign(Location *dst, Location *src);
+    void EmitSpecific(Mips *mips);
+};
+
+class Load: public Instruction
+{
+    Location *dst, *src;
+    int offset;
+public:
+    Load(Location *dst, Location *src, int offset = 0);
+    void EmitSpecific(Mips *mips);
+};
+
+class Store: public Instruction
+{
+    Location *dst, *src;
+    int offset;
+public:
+    Store(Location *d, Location *s, int offset = 0);
+    void EmitSpecific(Mips *mips);
+};
+
+class BinaryOp: public Instruction
+{
+public:
+    typedef enum {
+        Add, Sub, Mul, Div, Mod,
+        Eq, Ne, Lt, Le, Gt, Ge,
+        And, Or,
+        NumOps
+    } OpCode;
+    static const char * const opName[NumOps];
+    static OpCode OpCodeForName(const char *name);
+
+protected:
+    OpCode code;
+    Location *dst, *op1, *op2;
+public:
+    BinaryOp(OpCode c, Location *dst, Location *op1, Location *op2);
+    void EmitSpecific(Mips *mips);
+};
+
+class Label: public Instruction
+{
+    const char *label;
+public:
+    Label(const char *label);
+
+    void EmitSpecific(Mips *mips);
+    const char* text() const { return label; }
+};
+
+class Goto: public Instruction
+{
+    const char *label;
+public:
+    Goto(const char *label);
+    void EmitSpecific(Mips *mips);
+    const char* branch_label() const { return label; }
+};
+
+class IfZ: public Instruction
+{
+    Location *test;
+    const char *label;
+public:
+    IfZ(Location *test, const char *label);
+    void EmitSpecific(Mips *mips);
+    const char* branch_label() const { return label; }
+};
+
+class BeginFunc: public Instruction
+{
+    int frameSize;
+public:
+    BeginFunc();
+    // used to backpatch the instruction with frame size once known
+    void SetFrameSize(int numBytesForAllLocalsAndTemps);
+    void EmitSpecific(Mips *mips);
+};
+
+class EndFunc: public Instruction
+{
+public:
+    EndFunc();
+    void EmitSpecific(Mips *mips);
+};
+
+class Return: public Instruction
+{
+    Location *val;
+public:
+    Return(Location *val);
+    void EmitSpecific(Mips *mips);
+};
+
+class PushParam: public Instruction
+{
+    Location *param;
+public:
+    PushParam(Location *param);
+    void EmitSpecific(Mips *mips);
+};
+
+class PopParams: public Instruction
+{
+    int numBytes;
+public:
+    PopParams(int numBytesOfParamsToRemove);
+    void EmitSpecific(Mips *mips);
+};
+
+class LCall: public Instruction
+{
+    const char *label;
+    Location *dst;
+public:
+    LCall(const char *labe, Location *result);
+    void EmitSpecific(Mips *mips);
+};
+
+class ACall: public Instruction
+{
+    Location *dst, *methodAddr;
+public:
+    ACall(Location *meth, Location *result);
+    void EmitSpecific(Mips *mips);
+};
+
+class VTable: public Instruction
+{
+    List<const char *> *methodLabels;
+    const char *label;
+public:
+    VTable(const char *labelForTable, List<const char *> *methodLabels);
+
+    void EmitSpecific(Mips *mips);
+};
+
+
+// Mips Code
+
+
+class Mips
+{
+private:
+    typedef enum {
+        zero, at, v0, v1, a0, a1, a2, a3,
+        s0, s1, s2, s3, s4, s5, s6, s7,
+        t0, t1, t2, t3, t4, t5, t6, t7,
+        t8, t9, k0, k1, gp, sp, fp, ra, NumRegs
+    } Register;
+
+    struct RegContents {
+        bool isDirty;
+        Location *var;
+        const char *name;
+        bool isGeneralPurpose;
+    } regs[NumRegs];
+
+    Register rs, rt, rd;
+
+    typedef enum { ForRead, ForWrite } Reason;
+
+    void FillRegister(Location *src, Register reg);
+    void SpillRegister(Location *dst, Register reg);
+
+    void EmitCallInstr(Location *dst, const char *fn, bool isL);
+
+    static const char *mipsName[BinaryOp::NumOps];
+    static const char *NameForTac(BinaryOp::OpCode code);
+
+    Instruction* currentInstruction;
+
+public:
+    Mips();
+
+    static void Emit(const char *fmt, ...);
+
+    void EmitLoadConstant(Location *dst, int val);
+    void EmitLoadStringLiteral(Location *dst, const char *str);
+    void EmitLoadLabel(Location *dst, const char *label);
+
+    void EmitLoad(Location *dst, Location *reference, int offset);
+    void EmitStore(Location *reference, Location *value, int offset);
+    void EmitCopy(Location *dst, Location *src);
+
+    void EmitBinaryOp(BinaryOp::OpCode code, Location *dst,
+                      Location *op1, Location *op2);
+
+    void EmitLabel(const char *label);
+    void EmitGoto(const char *label);
+    void EmitIfZ(Location *test, const char*label);
+    void EmitReturn(Location *returnVal);
+
+    void EmitBeginFunction(int frameSize);
+    void EmitEndFunction();
+
+    void EmitParam(Location *arg);
+    void EmitLCall(Location *result, const char* label);
+    void EmitACall(Location *result, Location *fnAddr);
+    void EmitPopParams(int bytes);
+
+    void EmitVTable(const char *label, List<const char*> *methodLabels);
+
+    void EmitPreamble();
+
+    class CurrentInstruction;
+};
+
+// Adds CurrentInstruction to the Mips object
+class Mips::CurrentInstruction
+{
+public:
+    CurrentInstruction(Mips& mips, Instruction* instr) : mips( mips ) {
+        mips.currentInstruction= instr;
+    }
+
+    ~CurrentInstruction() {
+        mips.currentInstruction= NULL;
+    }
+
+private:
+    Mips& mips;
 };
 
 #endif
