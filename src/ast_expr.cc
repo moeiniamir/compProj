@@ -559,7 +559,7 @@ void FieldAccess::CheckType() {
 
         if (d == NULL || !d->IsVarDecl()) {
             ReportError::FieldNotFoundInBase(field, base_t);
-        } else {
+        } else {//amir here we check the accessibility of the field. to include public private protected, change here
             // If base is 'this' or any instances of current class,
             // then all the private variable members are accessible.
             // Otherwise the variable members are not accessible.

@@ -6,6 +6,9 @@ _PrintInt:
         li      $v0, 1
         lw      $a0, 4($fp)
         syscall
+        li      $v0, 4
+        la      $a0, NEWLINE
+        syscall
         move    $sp, $fp
         lw      $ra, -4($fp)
         lw      $fp, 0($fp)
@@ -19,6 +22,9 @@ _PrintString:
         addiu   $fp, $sp, 8
         li      $v0, 4
         lw      $a0, 4($fp)
+        syscall
+        li      $v0, 4
+        la      $a0, NEWLINE
         syscall
         move    $sp, $fp
         lw      $ra, -4($fp)
@@ -173,4 +179,5 @@ eloop4: addi    $t1, -1         # add '\0' at the end.
 TRUE:.asciiz "true"
 FALSE:.asciiz "false"
 SPACE:.asciiz "Making Space For Inputed Values Is Fun."
+NEWLINE:.asciiz "\n"
 

@@ -530,5 +530,11 @@ void PrintStmt::Emit() {
         Assert(l);
         CG->GenBuiltInCall(f, l);
     }
+
+    BuiltIn f = PrintString;
+    char const * str = "\\n";
+    Location *l = CG->GenLoadConstant(str);
+    Assert(l);
+    CG->GenBuiltInCall(f, l);
 }
 

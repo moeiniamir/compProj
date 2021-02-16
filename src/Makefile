@@ -7,7 +7,7 @@
 
 # Set the default target. When you make with no arguments,
 # this will be the target built.
-COMPILER = dcc
+COMPILER = main
 PRODUCTS = $(COMPILER)
 default: $(PRODUCTS)
 

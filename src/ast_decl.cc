@@ -467,10 +467,10 @@ void FnDecl::CheckDecl() {
 
     // check the signature of the main function.
     if (!strcmp(id->GetIdName(), "main")) {
-        if (returnType != Type::voidType) {
-            ReportError::Formatted(this->GetLocation(),
-                    "Return value of 'main' function is expected to be void.");
-        }
+//        if (returnType != Type::voidType) {
+//            ReportError::Formatted(this->GetLocation(),
+//                    "Return value of 'main' function is expected to be void.");
+//        }
         if (formals->NumElements() != 0) {
             ReportError::NumArgsMismatch(id, 0, formals->NumElements());
         }

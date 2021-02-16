@@ -7,7 +7,7 @@
 #
 
 SPIM=spim
-COMPILER=dcc
+COMPILER=main
 
 if [ $# -lt 1 ]; then
   echo "Run script error: The run script takes one argument, the path to a Decaf file."

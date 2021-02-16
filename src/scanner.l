@@ -70,8 +70,8 @@ SINGLE_COMMENT    ("//"[^\n]*)
                          if (YYSTATE == COPY) savedLines.Append("");
                          else yy_push_state(COPY); }
 
-[ ]+                   { /* ignore all spaces */  }
 <*>[\t]                { curColNum += TAB_SIZE - curColNum%TAB_SIZE + 1; }
+[[:space:]]+                   { /* ignore all spaces */  }
 
  /* -------------------- Comments ----------------------------- */
 {BEG_COMMENT}          { BEGIN(COMM); }
@@ -100,7 +100,7 @@ SINGLE_COMMENT    ("//"[^\n]*)
 "else"              { return T_Else;        }
 "return"            { return T_Return;      }
 "break"             { return T_Break;       }
-"New"               { return T_New;         }
+"new"               { return T_New;         }
 "NewArray"          { return T_NewArray;    }
 "Print"             { return T_Print;       }
 "ReadInteger"       { return T_ReadInteger; }

@@ -9,6 +9,9 @@
 #include <string.h>
 #include "tac.h"
 #include "mips.h"
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
 Location* CodeGenerator::ThisPtr = new Location(fpRelative, 4, "this");
 
@@ -212,6 +215,12 @@ void CodeGenerator::DoFinalCodeGen() {
         for (p= code.begin(); p != code.end(); ++p) {
             (*p)->Emit(&mips);
         }
+
+        printf("    # Prewritten asm\n");
+        std::ifstream i("./src/defs.asm");
+        std::stringstream buf;
+        buf << i.rdbuf();
+        printf("%s",buf.str().c_str());
     }
 }
 
