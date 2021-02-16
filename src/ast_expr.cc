@@ -57,7 +57,7 @@ void DoubleLiteral::Check(checkStep c) {
 void DoubleLiteral::Emit() {
     semantic_error = 1;
     return;
-    Assert(0);
+    ;
 }
 
 BoolLiteral::BoolLiteral(yyltype loc, bool val) : Expr(loc) {
@@ -80,7 +80,7 @@ void BoolLiteral::Emit() {
 }
 
 StringLiteral::StringLiteral(yyltype loc, const char *val) : Expr(loc) {
-    Assert(val != NULL);
+    ;
     value = strdup(val);
 }
 void StringLiteral::PrintChildren(int indentLevel) {
@@ -115,7 +115,7 @@ void NullLiteral::Emit() {
 }
 
 Operator::Operator(yyltype loc, const char *tok) : Node(loc) {
-    Assert(tok != NULL);
+    ;
     strncpy(tokenString, tok, sizeof(tokenString));
 }
 
@@ -125,7 +125,7 @@ void Operator::PrintChildren(int indentLevel) {
 
 CompoundExpr::CompoundExpr(Expr *l, Operator *o, Expr *r)
   : Expr(Join(l->GetLocation(), r->GetLocation())) {
-    Assert(l != NULL && o != NULL && r != NULL);
+    ;
     (op=o)->SetParent(this);
     (left=l)->SetParent(this);
     (right=r)->SetParent(this);
@@ -133,7 +133,7 @@ CompoundExpr::CompoundExpr(Expr *l, Operator *o, Expr *r)
 
 CompoundExpr::CompoundExpr(Operator *o, Expr *r)
   : Expr(Join(o->GetLocation(), r->GetLocation())) {
-    Assert(o != NULL && r != NULL);
+    ;
     left = NULL;
     (op=o)->SetParent(this);
     (right=r)->SetParent(this);
@@ -515,7 +515,7 @@ Location * ArrayAccess::GetEmitLocDeref() {
 
 FieldAccess::FieldAccess(Expr *b, Identifier *f)
   : LValue(b? Join(b->GetLocation(), f->GetLocation()) : *f->GetLocation()) {
-    Assert(f != NULL); // b can be be NULL (just means no explicit base)
+
     base = b;
     if (base) base->SetParent(this);
     (field=f)->SetParent(this);
@@ -643,7 +643,7 @@ Location * FieldAccess::GetEmitLocDeref() {
 }
 
 Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
-    Assert(f != NULL && a != NULL); // b can be be NULL (just means no explicit base)
+
     base = b;
     if (base) base->SetParent(this);
     (field=f)->SetParent(this);
@@ -753,7 +753,7 @@ void Call::Check(checkStep c) {
 }
 
 void Call::Emit() {
-    PrintDebug("tac+", "Emit Call %s.", field->GetIdName());
+//    PrintDebug("tac+", "Emit Call %s.", field->GetIdName());
     // TODO: in class scope, methon without base should be ACall.
 
     if (base) base->Emit();
@@ -770,7 +770,7 @@ void Call::Emit() {
     }
 
     FunctionDecl *fn = dynamic_cast<FunctionDecl*>(field->GetDecl());
-    Assert(fn);
+    ;
     bool is_ACall = (base != NULL) || (fn->IsClassMember());
 
     // get VTable entry.
@@ -812,7 +812,7 @@ void Call::Emit() {
 }
 
 NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) {
-    Assert(c != NULL);
+    ;
     (cType=c)->SetParent(this);
 }
 
@@ -847,7 +847,7 @@ void NewExpr::Check(checkStep c) {
 
 void NewExpr::Emit() {
     ClassDecl *d = dynamic_cast<ClassDecl*>(cType->GetId()->GetDecl());
-    Assert(d);
+    ;
     int size = d->GetInstanceSize();
     Location *t = CG->GenLoadConstant(size);
     asm_loc = CG->GenBuiltInCall(Alloc, t);
@@ -856,7 +856,7 @@ void NewExpr::Emit() {
 }
 
 NewArrayExpr::NewArrayExpr(yyltype loc, Expr *sz, Type *et) : Expr(loc) {
-    Assert(sz != NULL && et != NULL);
+    ;
     (size=sz)->SetParent(this);
     (elemType=et)->SetParent(this);
 }
@@ -945,7 +945,7 @@ void ReadLineExpr::Emit() {
 
 PostfixExpr::PostfixExpr(LValue *lv, Operator *o)
     : Expr(Join(lv->GetLocation(), o->GetLocation())) {
-    Assert(lv != NULL && o != NULL);
+    ;
     (lvalue=lv)->SetParent(this);
     (op=o)->SetParent(this);
 }

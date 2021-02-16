@@ -10,7 +10,6 @@
 
 #include <string.h>
 #include "scanner.h"
-#include "utility.h" // for PrintDebug()
 #include "globals.h"
 #include "parser.h" // for token codes, yylval
 #include "list.h"
@@ -171,7 +170,7 @@ SINGLE_COMMENT    ("//"[^\n]*)
  */
 void InitScanner()
 {
-    PrintDebug("lex", "Initializing scanner");
+    //PrintDebug("lex", "Initializing scanner");
     yy_flex_debug = false;
     BEGIN(N);
     yy_push_state(COPY); // copy first line at start

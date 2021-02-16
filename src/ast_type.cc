@@ -25,7 +25,7 @@ Type *Type::stringType = new Type("string");
 Type *Type::errorType  = new Type("error");
 
 Type::Type(const char *n) {
-    Assert(n);
+    ;
     typeName = strdup(n);
     semantic_type = NULL;
 }
@@ -50,7 +50,7 @@ void Type::Check(checkStep c) {
 }
 
 NamedType::NamedType(Identifier *i) : Type(*i->GetLocation()) {
-    Assert(i != NULL);
+    ;
     (id=i)->SetParent(this);
 }
 
@@ -86,7 +86,7 @@ void NamedType::Check(checkStep c, checkFor r) {
 }
 
 bool NamedType::IsEquivalentTo(Type *other) {
-    Assert(this->GetType() && other->GetType());
+    ;
 
     if (!other->IsNamedType()) {
         return false;
@@ -101,7 +101,7 @@ bool NamedType::IsEquivalentTo(Type *other) {
  * or class B or its parents implement interface A.
  */
 bool NamedType::IsCompatibleWith(Type *other) {
-    Assert(this->GetType() && other->GetType());
+    ;
 
     if (other == nullType) {
         return true;
@@ -113,7 +113,7 @@ bool NamedType::IsCompatibleWith(Type *other) {
         NamedType * nt = dynamic_cast<NamedType*>(other);
         Decl *decl1 = id->GetDecl();
         Decl *decl2 = nt->GetId()->GetDecl();
-        Assert(decl1 && decl2);
+        ;
         if (!decl2->IsClassDecl()) {
             return false;
         }
@@ -124,7 +124,7 @@ bool NamedType::IsCompatibleWith(Type *other) {
 }
 
 ArrayType::ArrayType(yyltype loc, Type *et) : Type(loc) {
-    Assert(et != NULL);
+    ;
     (elemType=et)->SetParent(this);
 }
 void ArrayType::PrintChildren(int indentLevel) {
@@ -149,7 +149,7 @@ void ArrayType::Check(checkStep c) {
 }
 
 bool ArrayType::IsEquivalentTo(Type *other) {
-    Assert(this->GetType() && other->GetType());
+    ;
 
     if (!other->IsArrayType()) {
         return false;
@@ -159,7 +159,7 @@ bool ArrayType::IsEquivalentTo(Type *other) {
 }
 
 bool ArrayType::IsCompatibleWith(Type *other) {
-    Assert(this->GetType() && other->GetType());
+    ;
 
     if (other == nullType) {
         return elemType->IsCompatibleWith(other);

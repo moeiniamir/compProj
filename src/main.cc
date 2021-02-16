@@ -6,7 +6,6 @@
 
 #include <string.h>
 #include <stdio.h>
-#include "utility.h"
 #include "globals.h"
 #include "parser.h"
 
@@ -20,7 +19,7 @@
  * attempt to parse a complete program from the input.
  */
 int main(int argc, char *argv[]) {
-    ParseCommandLine(argc, argv);
+//    ParseCommandLine(argc, argv);
 
     InitScanner();
     InitParser();

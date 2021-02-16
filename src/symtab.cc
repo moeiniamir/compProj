@@ -56,7 +56,7 @@ class Scope {
  */
 SymbolTable::SymbolTable()
 {
-    PrintDebug("sttrace", "SymbolTable constructor.\n");
+//    PrintDebug("sttrace", "SymbolTable constructor.\n");
     /* Init the global scope. */
     scopes = new std::vector<Scope *>;
     scopes->clear();
@@ -78,7 +78,7 @@ SymbolTable::SymbolTable()
  */
 void
 SymbolTable::ResetSymbolTable() {
-    PrintDebug("sttrace", "======== Reset SymbolTable ========\n");
+//    PrintDebug("sttrace", "======== Reset SymbolTable ========\n");
     activeScopes->clear();
     activeScopes->push_back(0);
 
@@ -93,7 +93,7 @@ SymbolTable::ResetSymbolTable() {
 void
 SymbolTable::BuildScope()
 {
-    PrintDebug("sttrace", "Build new scope %d.\n", scope_cnt + 1);
+//    PrintDebug("sttrace", "Build new scope %d.\n", scope_cnt + 1);
     scope_cnt++;
     scopes->push_back(new Scope());
     activeScopes->push_back(scope_cnt);
@@ -106,7 +106,7 @@ SymbolTable::BuildScope()
 void
 SymbolTable::BuildScope(const char *key)
 {
-    PrintDebug("sttrace", "Build new scope %d.\n", scope_cnt + 1);
+//    PrintDebug("sttrace", "Build new scope %d.\n", scope_cnt + 1);
     scope_cnt++;
     scopes->push_back(new Scope());
     scopes->at(scope_cnt)->SetOwner(key);
@@ -120,7 +120,7 @@ SymbolTable::BuildScope(const char *key)
 void
 SymbolTable::EnterScope()
 {
-    PrintDebug("sttrace", "Enter scope %d.\n", scope_cnt + 1);
+//    PrintDebug("sttrace", "Enter scope %d.\n", scope_cnt + 1);
     scope_cnt++;
     activeScopes->push_back(scope_cnt);
     cur_scope = scope_cnt;
@@ -143,7 +143,7 @@ SymbolTable::FindScopeFromOwnerName(const char *key)
         }
     }
 
-    PrintDebug("sttrace", "From %s find scope %d.\n", key, scope);
+//    PrintDebug("sttrace", "From %s find scope %d.\n", key, scope);
     return scope;
 }
 
@@ -156,7 +156,7 @@ SymbolTable::Lookup(Identifier *id)
     Decl *d = NULL;
     const char *parent = NULL;
     const char *key = id->GetIdName();
-    PrintDebug("sttrace", "Lookup %s from active scopes %d.\n", key, cur_scope);
+//    PrintDebug("sttrace", "Lookup %s from active scopes %d.\n", key, cur_scope);
 
     //printf("Look up %s from scope %d\n", key, cur_scope);
 
@@ -205,7 +205,7 @@ SymbolTable::LookupParent(Identifier *id)
     const char *parent = NULL;
     const char *key = id->GetIdName();
     Scope *s = scopes->at(cur_scope);
-    PrintDebug("sttrace", "Lookup %s in parent of %d.\n", key, cur_scope);
+//    PrintDebug("sttrace", "Lookup %s in parent of %d.\n", key, cur_scope);
 
     // Look up parent scopes.
     while (s->HasParent()) {
@@ -240,7 +240,7 @@ SymbolTable::LookupInterface(Identifier *id)
     const char *key = id->GetIdName();
     int scope;
     Scope *s = scopes->at(cur_scope);
-    PrintDebug("sttrace", "Lookup %s in interface of %d.\n", key, cur_scope);
+//    PrintDebug("sttrace", "Lookup %s in interface of %d.\n", key, cur_scope);
 
     // Look up interface scopes.
     if (s->HasInterface()) {
@@ -271,7 +271,7 @@ Decl * SymbolTable::LookupField(Identifier *base, Identifier *field) {
     Decl *d = NULL;
     const char *b = base->GetIdName();
     const char *f = field->GetIdName();
-    PrintDebug("sttrace", "Lookup %s from field %s\n", f, b);
+//    PrintDebug("sttrace", "Lookup %s from field %s\n", f, b);
 
     // find scope from field name.
     int scope = FindScopeFromOwnerName(b);
@@ -310,7 +310,7 @@ Decl * SymbolTable::LookupField(Identifier *base, Identifier *field) {
  * Look up the class decl for This.
  */
 Decl * SymbolTable::LookupThis() {
-    PrintDebug("sttrace", "Lookup This\n");
+//    PrintDebug("sttrace", "Lookup This\n");
     Decl *d = NULL;
     // Look up all the active scopes.
     for (int i = activeScopes->size(); i > 0; --i) {
@@ -319,7 +319,7 @@ Decl * SymbolTable::LookupThis() {
         Scope *s = scopes->at(scope);
 
         if (s->HasOwner()) {
-            PrintDebug("sttrace", "Lookup This as %s\n", s->GetOwner());
+//            PrintDebug("sttrace", "Lookup This as %s\n", s->GetOwner());
             // Look up scope 0 to find the class decl.
             Scope *s0 = scopes->at(0);
             if (s0->HasHT()) {
@@ -339,7 +339,7 @@ SymbolTable::InsertSymbol(Decl *decl)
 {
     const char *key = decl->GetId()->GetIdName();
     Scope *s = scopes->at(cur_scope);
-    PrintDebug("sttrace", "Insert %s to scope %d\n", key, cur_scope);
+//    PrintDebug("sttrace", "Insert %s to scope %d\n", key, cur_scope);
 
     if (!s->HasHT()) {
         s->BuildHT();
@@ -358,7 +358,7 @@ SymbolTable::LocalLookup(Identifier *id)
     Decl *d = NULL;
     const char *key = id->GetIdName();
     Scope *s = scopes->at(cur_scope);
-    PrintDebug("sttrace", "LocalLookup %s from scope %d\n", key, cur_scope);
+//    PrintDebug("sttrace", "LocalLookup %s from scope %d\n", key, cur_scope);
 
     if (s->HasHT()) {
         d = s->GetHT()->Lookup(key);
@@ -373,7 +373,7 @@ SymbolTable::LocalLookup(Identifier *id)
 void
 SymbolTable::ExitScope()
 {
-    PrintDebug("sttrace", "Exit scope %d\n", cur_scope);
+//    PrintDebug("sttrace", "Exit scope %d\n", cur_scope);
     activeScopes->pop_back();
     cur_scope = activeScopes->back();
 }

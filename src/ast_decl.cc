@@ -10,7 +10,7 @@
 
 
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
-    Assert(n != NULL);
+    ;
     (id=n)->SetParent(this);
     idx = -1;
     semantic_type = NULL;
@@ -18,7 +18,7 @@ Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
 
 
 VariableDecl::VariableDecl(Identifier *n, Type *t) : Decl(n) {
-    Assert(n != NULL && t != NULL);
+    ;
     (type=t)->SetParent(this);
     class_member_ofst = -1;
 }
@@ -89,7 +89,7 @@ void VariableDecl::Emit() {
 
 ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<Decl*> *m) : Decl(n) {
     // extends can be NULL, impl & mem may be empty lists but cannot be NULL
-    Assert(n != NULL && imp != NULL && m != NULL);
+    ;
     extends = ex;
     if (extends) extends->SetParent(this);
     (implements=imp)->SetParentAll(this);
@@ -155,7 +155,7 @@ void ClassDecl::CheckInherit() {
 
     for (int i = 0; i < members->NumElements(); i++) {
         Decl *d = members->Nth(i);
-        Assert(d != NULL); // already inserted into symbol table.
+        ; // already inserted into symbol table.
 
         if (d->IsVariableDecl()) {
             // check class inheritance of variables.
@@ -327,13 +327,13 @@ void ClassDecl::AssignOffset() {
         }
     }
 
-    PrintDebug("tac+", "Class Methods of %s:", id->GetIdName());
+//    PrintDebug("tac+", "Class Methods of %s:", id->GetIdName());
     for (int i = 0; i < methods->NumElements(); i++) {
-        PrintDebug("tac+", "%s", methods->Nth(i)->GetId()->GetIdName());
+//        PrintDebug("tac+", "%s", methods->Nth(i)->GetId()->GetIdName());
     }
-    PrintDebug("tac+", "Class Vars of %s:", id->GetIdName());
+//    PrintDebug("tac+", "Class Vars of %s:", id->GetIdName());
     for (int i = 0; i < var_members->NumElements(); i++) {
-        PrintDebug("tac+", "%s", var_members->Nth(i)->GetId()->GetIdName());
+//        PrintDebug("tac+", "%s", var_members->Nth(i)->GetId()->GetIdName());
     }
 
     // assign offset for fn members.
@@ -365,7 +365,7 @@ void ClassDecl::AddPrefixToMethods() {
 }
 
 void ClassDecl::Emit() {
-    PrintDebug("tac+", "Begin Emitting TAC in ClassDecl.");
+//    PrintDebug("tac+", "Begin Emitting TAC in ClassDecl.");
 
     members->EmitAll();
 
@@ -373,14 +373,14 @@ void ClassDecl::Emit() {
     List<const char*> *method_labels = new List<const char*>;
     for (int i = 0; i < methods->NumElements(); i++) {
         FunctionDecl* fn = methods->Nth(i);
-        PrintDebug("tac+", "Insert %s into VTable.", fn->GetId()->GetIdName());
+//        PrintDebug("tac+", "Insert %s into VTable.", fn->GetId()->GetIdName());
         method_labels->Append(fn->GetId()->GetIdName());
     }
     CG->GenVTable(id->GetIdName(), method_labels);
 }
 
 InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
-    Assert(n != NULL && m != NULL);
+    ;
     (members=m)->SetParentAll(this);
 }
 
@@ -423,11 +423,11 @@ void InterfaceDecl::Check(checkStep c) {
 void InterfaceDecl::Emit() {
     semantic_error = 1;
     return;
-    Assert(0);
+    ;
 }
 
 FunctionDecl::FunctionDecl(Identifier *n, Type *r, List<VariableDecl*> *d) : Decl(n) {
-    Assert(n != NULL && r!= NULL && d != NULL);
+    ;
     (returnType=r)->SetParent(this);
     (formals=d)->SetParentAll(this);
     body = NULL;
@@ -499,7 +499,7 @@ void FunctionDecl::Check(checkStep c) {
 }
 
 bool FunctionDecl::IsEquivalentTo(Decl *other) {
-    Assert(this->GetType() && other->GetType());
+    ;
 
     if (!other->IsFunctionDecl()) {
         return false;
@@ -542,11 +542,11 @@ void FunctionDecl::AssignMemberOffset(bool inClass, int offset) {
 }
 
 void FunctionDecl::Emit() {
-    PrintDebug("tac+", "Begin Emitting TAC in FunctionDecl.");
+//    PrintDebug("tac+", "Begin Emitting TAC in FunctionDecl.");
     if (returnType == Type::doubleType) {
         semantic_error = 1;
         return;
-        Assert(0);
+        ;
     }
 
     Decl *d = dynamic_cast<Decl*>(this->GetParent());
@@ -566,7 +566,7 @@ void FunctionDecl::Emit() {
         if (v->GetType() == Type::doubleType) {
             semantic_error = 1;
             return;
-            Assert(0);
+            ;
         }
         Location *l = new Location(fpRelative, CG->GetNextParamLoc(),
                 v->GetId()->GetIdName());

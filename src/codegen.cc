@@ -13,7 +13,7 @@
 #include <fstream>
 #include <sstream>
 
-Location* CodeGenerator::ThisPtr = new Location(fpRelative, 4, "this");
+Location *CodeGenerator::ThisPtr = new Location(fpRelative, 4, "this");
 
 CodeGenerator::CodeGenerator() {
     local_loc = OffsetToFirstLocal;     // -8, -12, -16, ...
@@ -65,7 +65,7 @@ Location *CodeGenerator::GenTempVar() {
        do that, the assert below will always fail to remind
        you this needs to be implemented  */
     result = new Location(fpRelative, GetNextLocalLoc(), temp);
-    Assert(result != NULL);
+    ;
     return result;
 }
 
@@ -97,16 +97,15 @@ Location *CodeGenerator::GenLoad(Location *ref, int offset) {
     return result;
 }
 
-void CodeGenerator::GenStore(Location *dst,Location *src, int offset) {
+void CodeGenerator::GenStore(Location *dst, Location *src, int offset) {
     code.push_back(new Store(dst, src, offset));
 }
 
 Location *CodeGenerator::GenBinaryOp(const char *opName, Location *op1,
-        Location *op2)
-{
+                                     Location *op2) {
     Location *result = GenTempVar();
     code.push_back(new
-            BinaryOp(BinaryOp::OpCodeForName(opName), result, op1, op2));
+                           BinaryOp(BinaryOp::OpCodeForName(opName), result, op1, op2));
     return result;
 }
 
@@ -143,8 +142,6 @@ void CodeGenerator::GenPushParam(Location *param) {
 }
 
 void CodeGenerator::GenPopParams(int numBytesOfParams) {
-    Assert(numBytesOfParams >= 0
-            && numBytesOfParams % VarSize == 0); // sanity check
     if (numBytesOfParams > 0)
         code.push_back(new PopParams(numBytesOfParams));
 }
@@ -166,62 +163,51 @@ static struct _builtin {
     int numArgs;
     bool hasReturn;
 } builtins[] = {
-    {"_Alloc", 1, true},
-    {"_ReadLine", 0, true},
-    {"_ReadInteger", 0, true},
-    {"_StringEqual", 2, true},
-    {"_PrintInt", 1, false},
-    {"_PrintString", 1, false},
-    {"_PrintBool", 1, false},
-    {"_Halt", 0, false},
+        {"_Alloc",       1, true},
+        {"_ReadLine",    0, true},
+        {"_ReadInteger", 0, true},
+        {"_StringEqual", 2, true},
+        {"_PrintInt",    1, false},
+        {"_PrintString", 1, false},
+        {"_PrintBool",   1, false},
+        {"_Halt",        0, false},
 //    {"_SemanError", 0, false}
 };
 
-Location *CodeGenerator::GenBuiltInCall(BuiltIn bn,Location *arg1,
-        Location *arg2)
-{
-    Assert(bn >= 0 && bn < NumBuiltIns);
+Location *CodeGenerator::GenBuiltInCall(BuiltIn bn, Location *arg1,
+                                        Location *arg2) {
+    ;
     struct _builtin *b = &builtins[bn];
     Location *result = NULL;
 
     if (b->hasReturn) result = GenTempVar();
-    // verify appropriate number of non-NULL arguments given
-    Assert((b->numArgs == 0 && !arg1 && !arg2)
-            || (b->numArgs == 1 && arg1 && !arg2)
-            || (b->numArgs == 2 && arg1 && arg2));
     if (arg2) code.push_back(new PushParam(arg2));
     if (arg1) code.push_back(new PushParam(arg1));
     code.push_back(new LCall(b->label, result));
-    GenPopParams(VarSize*b->numArgs);
+    GenPopParams(VarSize * b->numArgs);
     return result;
 }
 
 void CodeGenerator::GenVTable(const char *className,
-        List<const char *> *methodLabels)
-{
+                              List<const char *> *methodLabels) {
     code.push_back(new VTable(className, methodLabels));
 }
 
 void CodeGenerator::DoFinalCodeGen() {
-    if (IsDebugOn("tac")) { // if debug don't translate to mips, just print Tac
-        std::list<Instruction*>::iterator p;
-        for (p= code.begin(); p != code.end(); ++p) {
-            (*p)->Print();
-        }
-    }  else {
-        Mips mips;
-        mips.EmitPreamble();
 
-        std::list<Instruction*>::iterator p;
-        for (p= code.begin(); p != code.end(); ++p) {
-            (*p)->Emit(&mips);
-        }
+    Mips mips;
+    mips.EmitPreamble();
 
-        printf("    # Prewritten asm\n");
-        std::ifstream i("./src/defs.asm");
-        std::stringstream buf;
-        buf << i.rdbuf();
-        printf("%s",buf.str().c_str());
+    std::list<Instruction *>::iterator p;
+    for (p = code.begin(); p != code.end(); ++p) {
+        (*p)->Emit(&mips);
     }
+
+    printf("    # Prewritten asm\n");
+    std::ifstream i("./src/defs.asm");
+    std::stringstream buf;
+    buf << i.rdbuf();
+    printf("%s", buf.str().c_str());
+
 }
 

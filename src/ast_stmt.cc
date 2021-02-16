@@ -9,7 +9,7 @@
 
 
 Program::Program(List<Decl*> *d) {
-    Assert(d != NULL);
+    ;
     (decls=d)->SetParentAll(this);
 }
 
@@ -19,15 +19,15 @@ void Program::PrintChildren(int indentLevel) {
 }
 
 void Program::BuildSymTable() {
-    if (IsDebugOn("ast")) { this->Print(0); }
+//    if (IsDebugOn("ast")) { this->Print(0); }
     symtab = new SymbolTable();
 
     /* Pass 1: Traverse the AST and build the symbol table. Report the
      * errors of declaration conflict in any local scopes. */
     decls->BuildSymTableAll();
-    if (IsDebugOn("st")) { symtab->Print(); }
-    PrintDebug("ast+", "BuildSymTable finished.");
-    if (IsDebugOn("ast+")) { this->Print(0); }
+//    if (IsDebugOn("st")) { symtab->Print(); }
+//    PrintDebug("ast+", "BuildSymTable finished.");
+//    if (IsDebugOn("ast+")) { this->Print(0); }
 }
 
 void Program::Check() {
@@ -43,22 +43,22 @@ void Program::Check() {
      * identifiers except the field access and function calls. */
     symtab->ResetSymbolTable();
     decls->CheckAll(sem_decl);
-    PrintDebug("ast+", "CheckDecl finished.");
-    if (IsDebugOn("ast+")) { this->Print(0); }
+//    PrintDebug("ast+", "CheckDecl finished.");
+//    if (IsDebugOn("ast+")) { this->Print(0); }
 
     /* Pass 3: Traverse the AST and report errors related to the class and
      * interface inheritance. */
     symtab->ResetSymbolTable();
     decls->CheckAll(sem_inh);
-    PrintDebug("ast+", "CheckInherit finished.");
-    if (IsDebugOn("ast+")) { this->Print(0); }
+//    PrintDebug("ast+", "CheckInherit finished.");
+//    if (IsDebugOn("ast+")) { this->Print(0); }
 
     /* Pass 4: Traverse the AST and report errors related to types, function
      * calls and field access. Actually, check all the remaining errors. */
     symtab->ResetSymbolTable();
     decls->CheckAll(sem_type);
-    PrintDebug("ast+", "CheckType finished.");
-    if (IsDebugOn("ast+")) { this->Print(0); }
+//    PrintDebug("ast+", "CheckType finished.");
+//    if (IsDebugOn("ast+")) { this->Print(0); }
 }
 
 void Program::Emit() {
@@ -87,7 +87,7 @@ void Program::Emit() {
         return;
     }
 
-    PrintDebug("tac+", "Assign offset for class/interface members & global.");
+//    PrintDebug("tac+", "Assign offset for class/interface members & global.");
     // Assign offset for global var, class/interface members.
     for (int i = 0; i < decls->NumElements(); i++) {
         decls->Nth(i)->AssignOffset();
@@ -96,11 +96,11 @@ void Program::Emit() {
     for (int i = 0; i < decls->NumElements(); i++) {
         decls->Nth(i)->AddPrefixToMethods();
     }
-    if (IsDebugOn("tac+")) { this->Print(0); }
+//    if (IsDebugOn("tac+")) { this->Print(0); }
 
-    PrintDebug("tac+", "Begin Emitting TAC for Program.");
+//    PrintDebug("tac+", "Begin Emitting TAC for Program.");
     decls->EmitAll();
-    if (IsDebugOn("tac+")) { this->Print(0); }
+//    if (IsDebugOn("tac+")) { this->Print(0); }
 
     if(semantic_error != 0)
         return;
@@ -110,7 +110,7 @@ void Program::Emit() {
 }
 
 StmtBlock::StmtBlock(List<VariableDecl*> *d, List<Stmt*> *s) {
-    Assert(d != NULL && s != NULL);
+    ;
     (decls=d)->SetParentAll(this);
     (stmts=s)->SetParentAll(this);
 }
@@ -140,13 +140,13 @@ void StmtBlock::Emit() {
 }
 
 ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {
-    Assert(t != NULL && b != NULL);
+    ;
     (test=t)->SetParent(this);
     (body=b)->SetParent(this);
 }
 
 ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b) {
-    Assert(i != NULL && t != NULL && s != NULL && b != NULL);
+    ;
     (init=i)->SetParent(this);
     (step=s)->SetParent(this);
 }
@@ -260,7 +260,7 @@ void WhileStmt::Emit() {
 }
 
 IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) {
-    Assert(t != NULL && tb != NULL); // else can be NULL
+    ; // else can be NULL
     elseBody = eb;
     if (elseBody) elseBody->SetParent(this);
 }
@@ -348,12 +348,12 @@ void BreakStmt::Emit() {
     while (n->GetParent()) {
         if (n->IsLoopStmt()) {
             const char *l = dynamic_cast<LoopStmt*>(n)->GetEndLoopLabel();
-            PrintDebug("tac+", "endloop label %s.", l);
+//            PrintDebug("tac+", "endloop label %s.", l);
             CG->GenGoto(l);
             return;
         } else if (n->IsSwitchStmt()) {
             const char *l = dynamic_cast<SwitchStmt*>(n)->GetEndSwitchLabel();
-            PrintDebug("tac+", "endswitch label %s.", l);
+//            PrintDebug("tac+", "endswitch label %s.", l);
             CG->GenGoto(l);
             return;
         }
@@ -362,7 +362,7 @@ void BreakStmt::Emit() {
 }
 
 CaseStmt::CaseStmt(IntLiteral *v, List<Stmt*> *s) {
-    Assert(s != NULL);
+    ;
     value = v;
     if (value) value->SetParent(this);
     (stmts=s)->SetParentAll(this);
@@ -397,7 +397,7 @@ void CaseStmt::Emit() {
 }
 
 SwitchStmt::SwitchStmt(Expr *e, List<CaseStmt*> *c) {
-    Assert(e != NULL && c != NULL);
+    ;
     (expr=e)->SetParent(this);
     (cases=c)->SetParentAll(this);
     end_switch_label = NULL;
@@ -463,7 +463,7 @@ void SwitchStmt::Emit() {
 }
 
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) {
-    Assert(e != NULL);
+    ;
     (expr=e)->SetParent(this);
 }
 
@@ -501,7 +501,7 @@ void ReturnStmt::Emit() {
 }
 
 PrintStmt::PrintStmt(List<Expr*> *a) {
-    Assert(a != NULL);
+    ;
     (args=a)->SetParentAll(this);
 }
 
@@ -537,14 +537,14 @@ void PrintStmt::Emit() {
             f = PrintBool;
         }
         Location *l = args->Nth(i)->GetEmitLocDeref();
-        Assert(l);
+        ;
         CG->GenBuiltInCall(f, l);
     }
 
     BuiltIn f = PrintString;
     char const * str = "\\n";
     Location *l = CG->GenLoadConstant(str);
-    Assert(l);
+    ;
     CG->GenBuiltInCall(f, l);
 }
 

@@ -29,7 +29,6 @@
 #define _H_list
 
 #include <deque>
-#include "utility.h"  // for Assert()
 #include "globals.h"
 
 class Node;
@@ -50,13 +49,13 @@ template<class Element> class List {
           // Returns element at index in list. Indexing is 0-based.
           // Raises an assert if index is out of range.
     Element Nth(int index) const
-        { Assert(index >= 0 && index < NumElements());
+        { ;
           return elems[index]; }
 
           // Inserts element at index, shuffling over others
           // Raises assert if index out of range
     void InsertAt(const Element &elem, int index)
-        { Assert(index >= 0 && index <= NumElements());
+        { ;
           elems.insert(elems.begin() + index, elem); }
 
           // Adds element to list end
@@ -66,7 +65,7 @@ template<class Element> class List {
          // Removes element at index, shuffling down others
          // Raises assert if index out of range
     void RemoveAt(int index)
-        { Assert(index >= 0 && index < NumElements());
+        { ;
           elems.erase(elems.begin() + index); }
 
        // These are some specific methods useful for lists of ast nodes
