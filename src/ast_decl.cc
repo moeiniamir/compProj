@@ -23,16 +23,6 @@ VariableDecl::VariableDecl(Identifier *n, Type *t) : Decl(n) {
     class_member_ofst = -1;
 }
 
-void VariableDecl::PrintChildren(int indentLevel) {
-   if (semantic_type) std::cout << " <" << semantic_type << ">";
-   if (asm_loc) asm_loc->Print();
-   if (class_member_ofst != -1)
-       std::cout << " ~~[Ofst: " << class_member_ofst << "]";
-   type->Print(indentLevel+1);
-   id->Print(indentLevel+1);
-   if (id->GetDecl()) printf(" ........ {def}");
-}
-
 void VariableDecl::BuildSymTable() {
     if (symtab->LocalLookup(this->GetId())) {
         Decl *d = symtab->Lookup(this->GetId());
@@ -96,16 +86,6 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
     (members=m)->SetParentAll(this);
     instance_size = 4;
     vtable_size = 0;
-}
-
-void ClassDecl::PrintChildren(int indentLevel) {
-    if (semantic_type) std::cout << " <" << semantic_type << ">";
-    if (asm_loc) asm_loc->Print();
-    id->Print(indentLevel+1);
-    if (id->GetDecl()) printf(" ........ {def}");
-    if (extends) extends->Print(indentLevel+1, "(extends) ");
-    implements->PrintAll(indentLevel+1, "(implements) ");
-    members->PrintAll(indentLevel+1);
 }
 
 void ClassDecl::BuildSymTable() {
@@ -384,14 +364,6 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
     (members=m)->SetParentAll(this);
 }
 
-void InterfaceDecl::PrintChildren(int indentLevel) {
-    if (semantic_type) std::cout << " <" << semantic_type << ">";
-    if (asm_loc) asm_loc->Print();
-    id->Print(indentLevel+1);
-    if (id->GetDecl()) printf(" ........ {def}");
-    members->PrintAll(indentLevel+1);
-}
-
 void InterfaceDecl::BuildSymTable() {
     if (symtab->LocalLookup(this->GetId())) {
         Decl *d = symtab->Lookup(this->GetId());
@@ -436,18 +408,6 @@ FunctionDecl::FunctionDecl(Identifier *n, Type *r, List<VariableDecl*> *d) : Dec
 
 void FunctionDecl::SetFunctionBody(Stmt *b) {
     (body=b)->SetParent(this);
-}
-
-void FunctionDecl::PrintChildren(int indentLevel) {
-    if (semantic_type) std::cout << " <" << semantic_type << ">";
-    if (asm_loc) asm_loc->Print();
-    if (vtable_ofst != -1)
-        std::cout << " ~~[VTable: " << vtable_ofst << "]";
-    returnType->Print(indentLevel+1, "(return type) ");
-    id->Print(indentLevel+1);
-    if (id->GetDecl()) printf(" ........ {def}");
-    formals->PrintAll(indentLevel+1, "(formals) ");
-    if (body) body->Print(indentLevel+1, "(body) ");
 }
 
 void FunctionDecl::BuildSymTable() {

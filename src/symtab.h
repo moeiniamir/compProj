@@ -60,9 +60,6 @@ class SymbolTable {
 
     /* Resert symbol table counter and active scopes for another pass. */
     void ResetSymbolTable();
-
-    /* Print the whole symbol table. */
-    void Print();
 };
 
 extern SymbolTable *symtab;

@@ -77,10 +77,6 @@ template<class Element> class List {
     void SetParentAll(Node *p)
         { for (int i = 0; i < NumElements(); i++)
              Nth(i)->SetParent(p); }
-    void PrintAll(int indentLevel, const char *label = NULL)
-        { for (int i = 0; i < NumElements(); i++)
-             Nth(i)->Print(indentLevel, label); }
-
         // Build symbol table from all the elements of a list.
     void BuildSymTableAll()
         { for (int i = 0; i < NumElements(); i++)

@@ -30,11 +30,7 @@ Type::Type(const char *n) {
     semantic_type = NULL;
 }
 
-void Type::PrintChildren(int indentLevel) {
-    printf("%s", typeName);
-    if (semantic_type) std::cout << " <" << semantic_type << ">";
-    if (asm_loc) asm_loc->Print();
-}
+
 
 void Type::Check(checkT c) {
     if (c == E_CheckDecl) {
@@ -54,11 +50,7 @@ NamedType::NamedType(Identifier *i) : Type(*i->GetLocation()) {
     (id=i)->SetParent(this);
 }
 
-void NamedType::PrintChildren(int indentLevel) {
-    if (semantic_type) std::cout << " <" << semantic_type << ">";
-    if (asm_loc) asm_loc->Print();
-    id->Print(indentLevel+1);
-}
+
 
 void NamedType::CheckDecl(reasonT r) {
     Decl *d = symtab->Lookup(this->id);
@@ -127,11 +119,7 @@ ArrayType::ArrayType(yyltype loc, Type *et) : Type(loc) {
     Assert(et != NULL);
     (elemType=et)->SetParent(this);
 }
-void ArrayType::PrintChildren(int indentLevel) {
-    if (semantic_type) std::cout << " <" << semantic_type << ">";
-    if (asm_loc) asm_loc->Print();
-    elemType->Print(indentLevel+1);
-}
+
 
 void ArrayType::CheckDecl() {
     elemType->Check(E_CheckDecl);

@@ -203,25 +203,18 @@ void CodeGenerator::GenVTable(const char *className,
 }
 
 void CodeGenerator::DoFinalCodeGen() {
-    if (IsDebugOn("tac")) { // if debug don't translate to mips, just print Tac
-        std::list<Instruction*>::iterator p;
-        for (p= code.begin(); p != code.end(); ++p) {
-            (*p)->Print();
-        }
-    }  else {
-        Mips mips;
-        mips.EmitPreamble();
+    Mips mips;
+    mips.EmitPreamble();
 
-        std::list<Instruction*>::iterator p;
-        for (p= code.begin(); p != code.end(); ++p) {
-            (*p)->Emit(&mips);
-        }
-
-        printf("    # Prewritten asm\n");
-        std::ifstream i("./src/defs.asm");
-        std::stringstream buf;
-        buf << i.rdbuf();
-        printf("%s",buf.str().c_str());
+    std::list<Instruction*>::iterator p;
+    for (p= code.begin(); p != code.end(); ++p) {
+        (*p)->Emit(&mips);
     }
+
+    printf("    # Prewritten asm\n");
+    std::ifstream i("./src/defs.asm");
+    std::stringstream buf;
+    buf << i.rdbuf();
+    printf("%s",buf.str().c_str());
 }
 

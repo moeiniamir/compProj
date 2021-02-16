@@ -13,21 +13,13 @@ Program::Program(List<Decl*> *d) {
     (decls=d)->SetParentAll(this);
 }
 
-void Program::PrintChildren(int indentLevel) {
-    decls->PrintAll(indentLevel+1);
-    printf("\n");
-}
-
 void Program::BuildSymTable() {
-    if (IsDebugOn("ast")) { this->Print(0); }
     symtab = new SymbolTable();
 
     /* Pass 1: Traverse the AST and build the symbol table. Report the
      * errors of declaration conflict in any local scopes. */
     decls->BuildSymTableAll();
-    if (IsDebugOn("st")) { symtab->Print(); }
     PrintDebug("ast+", "BuildSymTable finished.");
-    if (IsDebugOn("ast+")) { this->Print(0); }
 }
 
 void Program::Check() {
@@ -44,21 +36,18 @@ void Program::Check() {
     symtab->ResetSymbolTable();
     decls->CheckAll(E_CheckDecl);
     PrintDebug("ast+", "CheckDecl finished.");
-    if (IsDebugOn("ast+")) { this->Print(0); }
 
     /* Pass 3: Traverse the AST and report errors related to the class and
      * interface inheritance. */
     symtab->ResetSymbolTable();
     decls->CheckAll(E_CheckInherit);
     PrintDebug("ast+", "CheckInherit finished.");
-    if (IsDebugOn("ast+")) { this->Print(0); }
 
     /* Pass 4: Traverse the AST and report errors related to types, function
      * calls and field access. Actually, check all the remaining errors. */
     symtab->ResetSymbolTable();
     decls->CheckAll(E_CheckType);
     PrintDebug("ast+", "CheckType finished.");
-    if (IsDebugOn("ast+")) { this->Print(0); }
 }
 
 void Program::Emit() {
@@ -96,11 +85,9 @@ void Program::Emit() {
     for (int i = 0; i < decls->NumElements(); i++) {
         decls->Nth(i)->AddPrefixToMethods();
     }
-    if (IsDebugOn("tac+")) { this->Print(0); }
 
     PrintDebug("tac+", "Begin Emitting TAC for Program.");
     decls->EmitAll();
-    if (IsDebugOn("tac+")) { this->Print(0); }
 
     if(semantic_error != 0)
         return;
@@ -115,10 +102,7 @@ StmtBlock::StmtBlock(List<VariableDecl*> *d, List<Stmt*> *s) {
     (stmts=s)->SetParentAll(this);
 }
 
-void StmtBlock::PrintChildren(int indentLevel) {
-    decls->PrintAll(indentLevel+1);
-    stmts->PrintAll(indentLevel+1);
-}
+
 
 void StmtBlock::BuildSymTable() {
     symtab->BuildScope();
@@ -151,12 +135,7 @@ ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b) {
     (step=s)->SetParent(this);
 }
 
-void ForStmt::PrintChildren(int indentLevel) {
-    init->Print(indentLevel+1, "(init) ");
-    test->Print(indentLevel+1, "(test) ");
-    step->Print(indentLevel+1, "(step) ");
-    body->Print(indentLevel+1, "(body) ");
-}
+
 
 void ForStmt::BuildSymTable() {
     symtab->BuildScope();
@@ -209,10 +188,7 @@ void ForStmt::Emit() {
     CG->GenLabel(l1);
 }
 
-void WhileStmt::PrintChildren(int indentLevel) {
-    test->Print(indentLevel+1, "(test) ");
-    body->Print(indentLevel+1, "(body) ");
-}
+
 
 void WhileStmt::BuildSymTable() {
     symtab->BuildScope();
@@ -265,11 +241,7 @@ IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) {
     if (elseBody) elseBody->SetParent(this);
 }
 
-void IfStmt::PrintChildren(int indentLevel) {
-    test->Print(indentLevel+1, "(test) ");
-    body->Print(indentLevel+1, "(then) ");
-    if (elseBody) elseBody->Print(indentLevel+1, "(else) ");
-}
+
 
 void IfStmt::BuildSymTable() {
     symtab->BuildScope();
@@ -369,10 +341,7 @@ CaseStmt::CaseStmt(IntLiteral *v, List<Stmt*> *s) {
     case_label = NULL;
 }
 
-void CaseStmt::PrintChildren(int indentLevel) {
-    if (value) value->Print(indentLevel+1);
-    stmts->PrintAll(indentLevel+1);
-}
+
 
 void CaseStmt::BuildSymTable() {
     symtab->BuildScope();
@@ -403,10 +372,7 @@ SwitchStmt::SwitchStmt(Expr *e, List<CaseStmt*> *c) {
     end_switch_label = NULL;
 }
 
-void SwitchStmt::PrintChildren(int indentLevel) {
-    expr->Print(indentLevel+1);
-    cases->PrintAll(indentLevel+1);
-}
+
 
 void SwitchStmt::BuildSymTable() {
     symtab->BuildScope();
@@ -467,9 +433,7 @@ ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) {
     (expr=e)->SetParent(this);
 }
 
-void ReturnStmt::PrintChildren(int indentLevel) {
-    expr->Print(indentLevel+1);
-}
+
 
 void ReturnStmt::Check(checkT c) {
     expr->Check(c);
@@ -505,9 +469,7 @@ PrintStmt::PrintStmt(List<Expr*> *a) {
     (args=a)->SetParentAll(this);
 }
 
-void PrintStmt::PrintChildren(int indentLevel) {
-    args->PrintAll(indentLevel+1, "(args) ");
-}
+
 
 void PrintStmt::Check(checkT c) {
     args->CheckAll(c);
