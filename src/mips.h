@@ -60,7 +60,7 @@ class Mips
     static void Emit(const char *fmt, ...);
 
     void EmitLoadConstant(Location *dst, int val);
-    void EmitLoadStringConstant(Location *dst, const char *str);
+    void EmitLoadStringLiteral(Location *dst, const char *str);
     void EmitLoadLabel(Location *dst, const char *label);
 
     void EmitLoad(Location *dst, Location *reference, int offset);

@@ -69,7 +69,7 @@ class ReportError
 
   // Errors used by semantic analyzer for declarations
   static void DeclConflict(Decl *newDecl, Decl *prevDecl);
-  static void OverrideMismatch(Decl *fnDecl);
+  static void OverrideMismatch(Decl *FunctionDecl);
   static void InterfaceNotImplemented(Decl *classDecl, Type *intfType);
 
 

@@ -74,7 +74,7 @@ void Program::Emit() {
     bool has_main = false;
     for (int i = 0; i < decls->NumElements(); i++) {
         Decl *d = decls->Nth(i);
-        if (d->IsFnDecl()) {
+        if (d->IsFunctionDecl()) {
             if (!strcmp(d->GetId()->GetIdName(), "main")) {
                 has_main = true;
                 break;
@@ -105,7 +105,7 @@ void Program::Emit() {
     CG->DoFinalCodeGen();
 }
 
-StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
+StmtBlock::StmtBlock(List<VariableDecl*> *d, List<Stmt*> *s) {
     Assert(d != NULL && s != NULL);
     (decls=d)->SetParentAll(this);
     (stmts=s)->SetParentAll(this);
@@ -353,7 +353,7 @@ void BreakStmt::Emit() {
     }
 }
 
-CaseStmt::CaseStmt(IntConstant *v, List<Stmt*> *s) {
+CaseStmt::CaseStmt(IntLiteral *v, List<Stmt*> *s) {
     Assert(s != NULL);
     value = v;
     if (value) value->SetParent(this);
@@ -432,7 +432,7 @@ void SwitchStmt::Emit() {
         const char *cl = c->GetCaseLabel();
 
         // get case value.
-        IntConstant *cv = c->GetCaseValue();
+        IntLiteral *cv = c->GetCaseValue();
 
         // gen branches.
         if (cv) {
@@ -467,13 +467,13 @@ void ReturnStmt::Check(checkT c) {
     expr->Check(c);
     if (c == E_CheckType) {
         Node *n = this;
-        // find the FnDecl.
+        // find the FunctionDecl.
         while (n->GetParent()) {
-            if (dynamic_cast<FnDecl*>(n) != NULL) break;
+            if (dynamic_cast<FunctionDecl*>(n) != NULL) break;
             n = n->GetParent();
         }
         Type *t_given = expr->GetType();
-        Type *t_expected = dynamic_cast<FnDecl*>(n)->GetType();
+        Type *t_expected = dynamic_cast<FunctionDecl*>(n)->GetType();
         if (t_given && t_expected) {
             if (!t_expected->IsCompatibleWith(t_given)) {
                 ReportError::ReturnMismatch(this, t_given, t_expected);

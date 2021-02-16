@@ -3,7 +3,7 @@
  * This file defines the abstract base class Node and the concrete
  * Identifier and Error node subclasses that are used through the tree as
  * leaf nodes. A parse tree is a hierarchical collection of ast nodes (or,
- * more correctly, of instances of concrete subclassses such as VarDecl,
+ * more correctly, of instances of concrete subclassses such as VariableDecl,
  * ForStmt, and AssignExpr).
  *
  * Location: Each node maintains its lexical location (line and columns in

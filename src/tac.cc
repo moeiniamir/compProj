@@ -40,7 +40,7 @@ void LoadConstant::EmitSpecific(Mips *mips) {
     mips->EmitLoadConstant(dst, val);
 }
 
-LoadStringConstant::LoadStringConstant(Location *d, const char *s)
+LoadStringLiteral::LoadStringLiteral(Location *d, const char *s)
   : dst(d) {
     Assert(dst != NULL && s != NULL);
     const char *quote = (*s == '"') ? "" : "\"";
@@ -50,8 +50,8 @@ LoadStringConstant::LoadStringConstant(Location *d, const char *s)
     sprintf(printed, "%s = %.50s%s", dst->GetName(), str, quote);
 }
 
-void LoadStringConstant::EmitSpecific(Mips *mips) {
-    mips->EmitLoadStringConstant(dst, str);
+void LoadStringLiteral::EmitSpecific(Mips *mips) {
+    mips->EmitLoadStringLiteral(dst, str);
 }
 
 LoadLabel::LoadLabel(Location *d, const char *l)

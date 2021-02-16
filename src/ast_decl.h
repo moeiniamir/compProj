@@ -26,7 +26,7 @@ class Type;
 class NamedType;
 class Identifier;
 class Stmt;
-class FnDecl;
+class FunctionDecl;
 
 class Decl : public Node
 {
@@ -42,10 +42,10 @@ class Decl : public Node
     Identifier *GetId() { return id; }
     int GetIndex() { return idx; }
 
-    virtual bool IsVarDecl() { return false; }
+    virtual bool IsVariableDecl() { return false; }
     virtual bool IsClassDecl() { return false; }
     virtual bool IsInterfaceDecl() { return false; }
-    virtual bool IsFnDecl() { return false; }
+    virtual bool IsFunctionDecl() { return false; }
 
     // code generation
     virtual void AssignOffset() {}
@@ -53,7 +53,7 @@ class Decl : public Node
     virtual void AddPrefixToMethods() {}
 };
 
-class VarDecl : public Decl
+class VariableDecl : public Decl
 {
   protected:
     Type *type;
@@ -67,12 +67,12 @@ class VarDecl : public Decl
     }
 
   public:
-    VarDecl(Identifier *name, Type *type);
-    const char *GetPrintNameForNode() { return "VarDecl"; }
+    VariableDecl(Identifier *name, Type *type);
+    const char *GetPrintNameForNode() { return "VariableDecl"; }
     void PrintChildren(int indentLevel);
 
     Type * GetType() { return type; }
-    bool IsVarDecl() { return true; }
+    bool IsVariableDecl() { return true; }
 
     void BuildST();
     void Check(checkT c);
@@ -92,8 +92,8 @@ class ClassDecl : public Decl
     List<NamedType*> *implements;
     int instance_size;
     int vtable_size;
-    List<VarDecl*> *var_members;
-    List<FnDecl*> *methods;
+    List<VariableDecl*> *var_members;
+    List<FunctionDecl*> *methods;
     void CheckDecl();
     void CheckInherit();
 
@@ -114,7 +114,7 @@ class ClassDecl : public Decl
     void Emit();
     int GetInstanceSize() { return instance_size; }
     int GetVTableSize() { return vtable_size; }
-    void AddMembersToList(List<VarDecl*> *vars, List<FnDecl*> *fns);
+    void AddMembersToList(List<VariableDecl*> *vars, List<FunctionDecl*> *fns);
     void AddPrefixToMethods();
 };
 
@@ -138,25 +138,25 @@ class InterfaceDecl : public Decl
     void Emit();
 };
 
-class FnDecl : public Decl
+class FunctionDecl : public Decl
 {
   protected:
-    List<VarDecl*> *formals;
+    List<VariableDecl*> *formals;
     Type *returnType;
     Stmt *body;
     int vtable_ofst;
     void CheckDecl();
 
   public:
-    FnDecl(Identifier *name, Type *returnType, List<VarDecl*> *formals);
+    FunctionDecl(Identifier *name, Type *returnType, List<VariableDecl*> *formals);
     void SetFunctionBody(Stmt *b);
-    const char *GetPrintNameForNode() { return "FnDecl"; }
+    const char *GetPrintNameForNode() { return "FunctionDecl"; }
     void PrintChildren(int indentLevel);
 
     Type * GetReturnType() { return returnType; }
-    List<VarDecl*> * GetFormals() { return formals; }
+    List<VariableDecl*> * GetFormals() { return formals; }
 
-    bool IsFnDecl() { return true; }
+    bool IsFunctionDecl() { return true; }
     bool IsEquivalentTo(Decl *fn);
 
     void BuildST();

@@ -85,10 +85,10 @@ void ReportError::DeclConflict(Decl *decl, Decl *prevDecl) {
     OutputError(decl->GetLocation(), s.str());
 }
 
-void ReportError::OverrideMismatch(Decl *fnDecl) {
+void ReportError::OverrideMismatch(Decl *FunctionDecl) {
     stringstream s;
-    s << "Method '" << fnDecl << "' must match inherited type signature";
-    OutputError(fnDecl->GetLocation(), s.str());
+    s << "Method '" << FunctionDecl << "' must match inherited type signature";
+    OutputError(FunctionDecl->GetLocation(), s.str());
 }
 
 void ReportError::InterfaceNotImplemented(Decl *cd, Type *interfaceType) {

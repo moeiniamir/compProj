@@ -77,7 +77,7 @@ Location *CodeGenerator::GenLoadConstant(int value) {
 
 Location *CodeGenerator::GenLoadConstant(const char *s) {
     Location *result = GenTempVar();
-    code.push_back(new LoadStringConstant(result, s));
+    code.push_back(new LoadStringLiteral(result, s));
     return result;
 }
 

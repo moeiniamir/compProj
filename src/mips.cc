@@ -96,14 +96,14 @@ void Mips::EmitLoadConstant(Location *dst, int val) {
     SpillRegister(dst, rd);
 }
 
-/* Method: EmitLoadStringConstant
+/* Method: EmitLoadStringLiteral
  * ------------------------------
  * Used to assign a variable a pointer to string constant. Emits
  * assembly directives to create a new null-terminated string in the
  * data segment and assigns it a unique label. Slaves dst into a register
  * and loads that label address into the register.
  */
-void Mips::EmitLoadStringConstant(Location *dst, const char *str) {
+void Mips::EmitLoadStringLiteral(Location *dst, const char *str) {
     static int strNum = 1;
     char label[16];
     sprintf(label, "_string%d", strNum++);

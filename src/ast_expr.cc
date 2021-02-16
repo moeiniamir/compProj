@@ -20,97 +20,97 @@ void EmptyExpr::Check(checkT c) {
     }
 }
 
-IntConstant::IntConstant(yyltype loc, int val) : Expr(loc) {
+IntLiteral::IntLiteral(yyltype loc, int val) : Expr(loc) {
     value = val;
 }
-void IntConstant::PrintChildren(int indentLevel) {
+void IntLiteral::PrintChildren(int indentLevel) {
     printf("%d", value);
     if (expr_type) std::cout << " <" << expr_type << ">";
     if (emit_loc) emit_loc->Print();
 }
 
-void IntConstant::Check(checkT c) {
+void IntLiteral::Check(checkT c) {
     if (c == E_CheckDecl) {
         expr_type = Type::intType;
     }
 }
 
-void IntConstant::Emit() {
+void IntLiteral::Emit() {
     emit_loc = CG->GenLoadConstant(value);
 }
 
-DoubleConstant::DoubleConstant(yyltype loc, double val) : Expr(loc) {
+DoubleLiteral::DoubleLiteral(yyltype loc, double val) : Expr(loc) {
     value = val;
 }
-void DoubleConstant::PrintChildren(int indentLevel) {
+void DoubleLiteral::PrintChildren(int indentLevel) {
     printf("%g", value);
     if (expr_type) std::cout << " <" << expr_type << ">";
     if (emit_loc) emit_loc->Print();
 }
 
-void DoubleConstant::Check(checkT c) {
+void DoubleLiteral::Check(checkT c) {
     if (c == E_CheckDecl) {
         expr_type = Type::doubleType;
     }
 }
 
-void DoubleConstant::Emit() {
+void DoubleLiteral::Emit() {
     ReportError::Formatted(this->GetLocation(),
             "Double is not supported by compiler back end yet.");
     Assert(0);
 }
 
-BoolConstant::BoolConstant(yyltype loc, bool val) : Expr(loc) {
+BoolLiteral::BoolLiteral(yyltype loc, bool val) : Expr(loc) {
     value = val;
 }
-void BoolConstant::PrintChildren(int indentLevel) {
+void BoolLiteral::PrintChildren(int indentLevel) {
     printf("%s", value ? "true" : "false");
     if (expr_type) std::cout << " <" << expr_type << ">";
     if (emit_loc) emit_loc->Print();
 }
 
-void BoolConstant::Check(checkT c) {
+void BoolLiteral::Check(checkT c) {
     if (c == E_CheckDecl) {
         expr_type = Type::boolType;
     }
 }
 
-void BoolConstant::Emit() {
+void BoolLiteral::Emit() {
     emit_loc = CG->GenLoadConstant(value ? 1 : 0);
 }
 
-StringConstant::StringConstant(yyltype loc, const char *val) : Expr(loc) {
+StringLiteral::StringLiteral(yyltype loc, const char *val) : Expr(loc) {
     Assert(val != NULL);
     value = strdup(val);
 }
-void StringConstant::PrintChildren(int indentLevel) {
+void StringLiteral::PrintChildren(int indentLevel) {
     printf("%s",value);
     if (expr_type) std::cout << " <" << expr_type << ">";
     if (emit_loc) emit_loc->Print();
 }
 
-void StringConstant::Check(checkT c) {
+void StringLiteral::Check(checkT c) {
     if (c == E_CheckDecl) {
         expr_type = Type::stringType;
     }
 }
 
-void StringConstant::Emit() {
+void StringLiteral::Emit() {
     emit_loc = CG->GenLoadConstant(value);
 }
 
-void NullConstant::PrintChildren(int indentLevel) {
+void NullLiteral::PrintChildren(int indentLevel) {
     if (expr_type) std::cout << " <" << expr_type << ">";
     if (emit_loc) emit_loc->Print();
 }
 
-void NullConstant::Check(checkT c) {
+void NullLiteral::Check(checkT c) {
     if (c == E_CheckDecl) {
         expr_type = Type::nullType;
     }
 }
 
-void NullConstant::Emit() {
+void NullLiteral::Emit() {
     emit_loc = CG->GenLoadConstant(0);
 }
 
@@ -536,7 +536,7 @@ void FieldAccess::CheckDecl() {
 void FieldAccess::CheckType() {
     if (!base) {
         if (field->GetDecl()) {
-            if (field->GetDecl()->IsVarDecl()) {
+            if (field->GetDecl()->IsVariableDecl()) {
                 expr_type = field->GetDecl()->GetType();
             } else {
                 ReportError::IdentifierNotDeclared(field, LookingForVariable);
@@ -557,7 +557,7 @@ void FieldAccess::CheckType() {
         Decl *d = symtab->LookupField(
                 dynamic_cast<NamedType*>(base_t)->GetId(), field);
 
-        if (d == NULL || !d->IsVarDecl()) {
+        if (d == NULL || !d->IsVariableDecl()) {
             ReportError::FieldNotFoundInBase(field, base_t);
         } else {//amir here we check the accessibility of the field. to include public private protected, change here
             // If base is 'this' or any instances of current class,
@@ -579,7 +579,7 @@ void FieldAccess::CheckType() {
             d = symtab->LookupField(
                     dynamic_cast<NamedType*>(cur_t)->GetId(), field);
 
-            if (d == NULL || !d->IsVarDecl()) {
+            if (d == NULL || !d->IsVariableDecl()) {
                 ReportError::FieldNotFoundInBase(field, cur_t);
                 return;
             }
@@ -644,7 +644,7 @@ void Call::PrintChildren(int indentLevel) {
 void Call::CheckDecl() {
     if (!base) {
         Decl *d = symtab->Lookup(field);
-        if (d == NULL || !d->IsFnDecl()) {
+        if (d == NULL || !d->IsFunctionDecl()) {
             ReportError::IdentifierNotDeclared(field, LookingForFunction);
             return;
         } else {
@@ -683,7 +683,7 @@ void Call::CheckType() {
             } else {
                 Decl *d = symtab->LookupField(
                         dynamic_cast<NamedType*>(t)->GetId(), field);
-                if (d == NULL || !d->IsFnDecl()) {
+                if (d == NULL || !d->IsFunctionDecl()) {
                     ReportError::FieldNotFoundInBase(field, t);
                 } else {
                     field->SetDecl(d);
@@ -698,9 +698,9 @@ void Call::CheckType() {
 
 void Call::CheckFuncArgs() {
     Decl *f = field->GetDecl();
-    if (!f || !f->IsFnDecl()) return; // skip the error decl
-    FnDecl *fun = dynamic_cast<FnDecl*>(f);
-    List<VarDecl*> *formals = fun->GetFormals();
+    if (!f || !f->IsFunctionDecl()) return; // skip the error decl
+    FunctionDecl *fun = dynamic_cast<FunctionDecl*>(f);
+    List<VariableDecl*> *formals = fun->GetFormals();
 
     int n_expected = formals->NumElements();
     int n_given = actuals->NumElements();
@@ -746,7 +746,7 @@ void Call::Emit() {
         return;
     }
 
-    FnDecl *fn = dynamic_cast<FnDecl*>(field->GetDecl());
+    FunctionDecl *fn = dynamic_cast<FunctionDecl*>(field->GetDecl());
     Assert(fn);
     bool is_ACall = (base != NULL) || (fn->IsClassMember());
 

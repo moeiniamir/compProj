@@ -25,7 +25,7 @@
 #include "ast.h"
 
 class Decl;
-class VarDecl;
+class VariableDecl;
 class Expr;
 
 class Program : public Node
@@ -56,11 +56,11 @@ class Stmt : public Node
 class StmtBlock : public Stmt
 {
   protected:
-    List<VarDecl*> *decls;
+    List<VariableDecl*> *decls;
     List<Stmt*> *stmts;
 
   public:
-    StmtBlock(List<VarDecl*> *variableDeclarations, List<Stmt*> *statements);
+    StmtBlock(List<VariableDecl*> *variableDeclarations, List<Stmt*> *statements);
     const char *GetPrintNameForNode() { return "StmtBlock"; }
     void PrintChildren(int indentLevel);
 
@@ -160,17 +160,17 @@ class BreakStmt : public Stmt
     void Emit();
 };
 
-class IntConstant;
+class IntLiteral;
 
 class CaseStmt : public Stmt
 {
   protected:
-    IntConstant *value;
+    IntLiteral *value;
     List<Stmt*> *stmts;
     const char *case_label;
 
   public:
-    CaseStmt(IntConstant *v, List<Stmt*> *stmts);
+    CaseStmt(IntLiteral *v, List<Stmt*> *stmts);
     const char *GetPrintNameForNode() { return value ? "Case" : "Default"; }
     void PrintChildren(int indentLevel);
 
@@ -181,7 +181,7 @@ class CaseStmt : public Stmt
     void Emit();
     void GenCaseLabel();
     const char * GetCaseLabel() { return case_label; }
-    IntConstant * GetCaseValue() { return value; }
+    IntLiteral * GetCaseValue() { return value; }
 };
 
 class SwitchStmt : public Stmt

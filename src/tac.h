@@ -74,7 +74,7 @@ class Instruction {
 // the interfaces for the classes follows below
 
 class LoadConstant;
-class LoadStringConstant;
+class LoadStringLiteral;
 class LoadLabel;
 class Assign;
 class Load;
@@ -101,12 +101,12 @@ class LoadConstant: public Instruction
     void EmitSpecific(Mips *mips);
 };
 
-class LoadStringConstant: public Instruction
+class LoadStringLiteral: public Instruction
 {
     Location *dst;
     char *str;
   public:
-    LoadStringConstant(Location *dst, const char *s);
+    LoadStringLiteral(Location *dst, const char *s);
     void EmitSpecific(Mips *mips);
 };
 

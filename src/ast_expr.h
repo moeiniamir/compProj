@@ -53,14 +53,14 @@ class EmptyExpr : public Expr
     bool IsEmptyExpr() { return true; }
 };
 
-class IntConstant : public Expr
+class IntLiteral : public Expr
 {
   protected:
     int value;
 
   public:
-    IntConstant(yyltype loc, int val);
-    const char *GetPrintNameForNode() { return "IntConstant"; }
+    IntLiteral(yyltype loc, int val);
+    const char *GetPrintNameForNode() { return "IntLiteral"; }
     void PrintChildren(int indentLevel);
 
     void Check(checkT c);
@@ -69,14 +69,14 @@ class IntConstant : public Expr
     void Emit();
 };
 
-class DoubleConstant : public Expr
+class DoubleLiteral : public Expr
 {
   protected:
     double value;
 
   public:
-    DoubleConstant(yyltype loc, double val);
-    const char *GetPrintNameForNode() { return "DoubleConstant"; }
+    DoubleLiteral(yyltype loc, double val);
+    const char *GetPrintNameForNode() { return "DoubleLiteral"; }
     void PrintChildren(int indentLevel);
 
     void Check(checkT c);
@@ -85,14 +85,14 @@ class DoubleConstant : public Expr
     void Emit();
 };
 
-class BoolConstant : public Expr
+class BoolLiteral : public Expr
 {
   protected:
     bool value;
 
   public:
-    BoolConstant(yyltype loc, bool val);
-    const char *GetPrintNameForNode() { return "BoolConstant"; }
+    BoolLiteral(yyltype loc, bool val);
+    const char *GetPrintNameForNode() { return "BoolLiteral"; }
     void PrintChildren(int indentLevel);
 
     void Check(checkT c);
@@ -101,14 +101,14 @@ class BoolConstant : public Expr
     void Emit();
 };
 
-class StringConstant : public Expr
+class StringLiteral : public Expr
 {
   protected:
     char *value;
 
   public:
-    StringConstant(yyltype loc, const char *val);
-    const char *GetPrintNameForNode() { return "StringConstant"; }
+    StringLiteral(yyltype loc, const char *val);
+    const char *GetPrintNameForNode() { return "StringLiteral"; }
     void PrintChildren(int indentLevel);
 
     void Check(checkT c);
@@ -117,11 +117,11 @@ class StringConstant : public Expr
     void Emit();
 };
 
-class NullConstant: public Expr
+class NullLiteral: public Expr
 {
   public:
-    NullConstant(yyltype loc) : Expr(loc) {}
-    const char *GetPrintNameForNode() { return "NullConstant"; }
+    NullLiteral(yyltype loc) : Expr(loc) {}
+    const char *GetPrintNameForNode() { return "NullLiteral"; }
     void PrintChildren(int indentLevel);
     void Check(checkT c);
 
