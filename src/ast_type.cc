@@ -5,7 +5,7 @@
 #include "ast_type.h"
 #include "ast_decl.h"
 #include <string.h>
-#include "errors.h"
+#include "globals.h"
 
 
 /* Class constants

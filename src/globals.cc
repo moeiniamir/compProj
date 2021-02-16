@@ -3,7 +3,7 @@
  * Implementation for error-reporting class.
  */
 
-#include "errors.h"
+#include "globals.h"
 #include <iostream>
 #include <sstream>
 #include <stdarg.h>

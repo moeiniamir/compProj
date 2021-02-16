@@ -5,7 +5,7 @@
 #include "ast_decl.h"
 #include "ast_type.h"
 #include "ast_stmt.h"
-#include "errors.h"
+#include "globals.h"
 #include "list.h"
 
 

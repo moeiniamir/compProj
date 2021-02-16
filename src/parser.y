@@ -34,7 +34,7 @@
  */
 #include "scanner.h" // for yylex
 #include "parser.h"
-#include "errors.h"
+#include "globals.h"
 #include "codegen.h"
 #include "ast.h"
 

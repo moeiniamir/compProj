@@ -7,7 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "utility.h"
-#include "errors.h"
+#include "globals.h"
 #include "parser.h"
 
 

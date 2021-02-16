@@ -30,7 +30,7 @@
 
 #include <deque>
 #include "utility.h"  // for Assert()
-#include "errors.h"
+#include "globals.h"
 
 class Node;
 

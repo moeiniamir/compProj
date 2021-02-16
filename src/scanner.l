@@ -11,7 +11,7 @@
 #include <string.h>
 #include "scanner.h"
 #include "utility.h" // for PrintDebug()
-#include "errors.h"
+#include "globals.h"
 #include "parser.h" // for token codes, yylval
 #include "list.h"
 

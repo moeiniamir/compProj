@@ -7,7 +7,7 @@
 #include "ast_decl.h"
 #include <string.h> // strdup
 #include <stdio.h>  // printf
-#include "errors.h"
+#include "globals.h"
 
 // the global code generator class.
 CodeGenerator *CG = new CodeGenerator();

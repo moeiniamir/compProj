@@ -46,7 +46,7 @@
 #include "location.h"
 #include <iostream>
 #include "symtab.h"
-#include "errors.h"
+#include "globals.h"
 #include "codegen.h"
 
 // the global code generator class.
