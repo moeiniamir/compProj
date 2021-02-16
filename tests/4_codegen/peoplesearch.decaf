@@ -1,4 +1,4 @@
-// ayeah-geraldoh CS143 Winter 2000-01
+
 void PrintLine(){
 	Print("------------------------------------------------------------------------\n");
 }
@@ -85,15 +85,15 @@ class Database{
 				}
 				people[i].PrintInfo();
 				Print("\n");
-				//Print("hit enter to continue searching...\n");
-				//ReadLine();
+
+
 			}
 		}
 		if(!found){
 			Print("\n", name, " not found!\n");
 		}
 		else{
-			//Print("End of list\n");
+
 		}	
 		PrintLine();
 	}
@@ -228,7 +228,7 @@ void main(){
 	Print("\n");
 	input = "";
 	while(input != "quit"){
-		//PrintLine();
+
 		Print("Please enter your command(type help for a list of commands): ");
 		input = ReadLine();
 		if(input == "help"){

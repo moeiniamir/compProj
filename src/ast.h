@@ -1,48 +1,9 @@
-/* File: ast.h
- * -----------
- * This file defines the abstract base class Node and the concrete
- * Identifier and Error node subclasses that are used through the tree as
- * leaf nodes. A parse tree is a hierarchical collection of ast nodes (or,
- * more correctly, of instances of concrete subclassses such as VariableDecl,
- * ForStmt, and AssignExpr).
- *
- * Location: Each node maintains its lexical location (line and columns in
- * file), that location can be NULL for those nodes that don't care/use
- * locations. The location is typcially set by the node constructor.  The
- * location is used to provide the context when reporting semantic errors.
- *
- * Parent: Each node has a pointer to its parent. For a Program node, the
- * parent is NULL, for all other nodes it is the pointer to the node one level
- * up in the parse tree.  The parent is not set in the constructor (during a
- * bottom-up parse we don't know the parent at the time of construction) but
- * instead we wait until assigning the children into the parent node and then
- * set up links in both directions. The parent link is typically not used
- * during parsing, but is more important in later phases.
- *
- * Printing: The only interesting behavior of the node classes for pp2 is the
- * bility to print the tree using an in-order walk.  Each node class is
- * responsible for printing itself/children by overriding the virtual
- * PrintChildren() and GetPrintNameForNode() methods. All the classes we
- * provide already implement these methods, so your job is to construct the
- * nodes and wire them up during parsing. Once that's done, printing is a snap!
- *
- * Semantic analysis: For pp3 you are adding "Check" behavior to the ast
- * node classes. Your semantic analyzer should do an inorder walk on the
- * parse tree, and when visiting each node, verify the particular
- * semantic rules that apply to that construct.
- *
- * Code generation: For pp5 you are adding "Emit" behavior to the ast
- * node classes. Your code generator should do an postorder walk on the
- * parse tree, and when visiting each node, emitting the necessary
- * instructions for that construct.
- *
- * Author: Deyuan Guo
- */
+
 
 #ifndef _H_ast
 #define _H_ast
 
-#include <stdlib.h>   // for NULL
+#include <stdlib.h>
 #include <iostream>
 #include "scopeHandler.h"
 #include "globals.h"
@@ -52,7 +13,7 @@
 
 
 
-// the global code generator class.
+
 extern CodeGenerator *CG;
 
 class Node
@@ -60,7 +21,7 @@ class Node
   protected:
     yyltype *location;
     Node *parent;
-    Type *semantic_type; // link to the type of each node (not for stmt)
+    Type *semantic_type;
     Location *asm_loc;
 
   public:
@@ -79,7 +40,7 @@ class Node
     virtual bool IsSwitchStmt() { return false; }
     virtual bool IsCaseStmt() { return false; }
 
-    // code generation
+
     virtual void Emit() {}
     virtual Location * GetEmitLoc() { return asm_loc; }
 };
@@ -103,18 +64,18 @@ class Identifier : public Node
     void SetDecl(Decl *d) { decl = d; }
     Decl * GetDecl() { return decl; }
 
-    // code generation
+
     void Emit();
     void AddPrefix(const char *prefix);
     Location * GetEmitLocDeref() { return GetEmitLoc(); }
 };
 
 
-// This node class is designed to represent a portion of the tree that
-// encountered syntax errors during parsing. The partial completed tree
-// is discarded along with the states being popped, and an instance of
-// the Error class can stand in as the placeholder in the parse tree
-// when your parser can continue after an error.
+
+
+
+
+
 class Error : public Node
 {
   public:
@@ -122,21 +83,7 @@ class Error : public Node
 };
 
 
-/* File: ast_type.h
- * ----------------
- * In our parse tree, Type nodes are used to represent and
- * store type information. The base Type class is used
- * for built-in types, the NamedType for classes and interfaces,
- * and the ArrayType for arrays of other types.
- *
- * pp3: You will need to extend the Type classes to implement
- * the type system and rules for type equivalency and compatibility.
- *
- * pp5: You will need to extend the Type classes to implement
- * code generation for types.
- *
- * Author: Deyuan Guo
- */
+
 
 
 
@@ -170,7 +117,7 @@ public :
     virtual void Check(checkStep c, checkFor r) { Check(c); }
     virtual void SetSelfType() { semantic_type = this; }
 
-    // code generation
+
     virtual int GetTypeSize() { return 4; }
 };
 
@@ -220,22 +167,7 @@ public:
 
 
 
-/* File: ast_decl.h
- * ----------------
- * In our parse tree, Decl nodes are used to represent and
- * manage declarations. There are 4 subclasses of the base class,
- * specialized for declarations of variables, functions, classes,
- * and interfaces.
- *
- * pp3: You will need to extend the Decl classes to implement
- * semantic processing including detection of declaration conflicts
- * and managing scoping issues.
- *
- * pp5: You will need to extend the Decl classes to implement
- * code generation for declarations.
- *
- * Author: Deyuan Guo
- */
+
 
 
 class Type;
@@ -263,7 +195,7 @@ public:
     virtual bool IsInterfaceDecl() { return false; }
     virtual bool IsFunctionDecl() { return false; }
 
-    // code generation
+
     virtual void AssignOffset() {}
     virtual void AssignMemberOffset(bool inClass, int offset) {}
     virtual void AddPrefixToMethods() {}
@@ -291,7 +223,7 @@ public:
     void BuildSymTable();
     void Check(checkStep c);
 
-    // code generation
+
     void AssignOffset();
     void AssignMemberOffset(bool inClass, int offset);
     void Emit();
@@ -321,7 +253,7 @@ public:
     bool IsChildOf(Decl *other);
     NamedType * GetExtends() { return extends; }
 
-    // code generation
+
     void AssignOffset();
     void Emit();
     int GetInstanceSize() { return instance_size; }
@@ -344,7 +276,7 @@ public:
     void Check(checkStep c);
     List<Decl*> * GetMembers() { return members; }
 
-    // code generation
+
     void Emit();
 };
 
@@ -370,7 +302,7 @@ public:
     void BuildSymTable();
     void Check(checkStep c);
 
-    // code generation
+
     void AddPrefixToMethods();
     void AssignMemberOffset(bool inClass, int offset);
     void Emit();
@@ -384,24 +316,7 @@ public:
 
 
 
-/* File: ast_stmt.h
- * ----------------
- * The Stmt class and its subclasses are used to represent
- * statements in the parse tree.  For each statment in the
- * language (for, if, return, etc.) there is a corresponding
- * node class for that construct.
- *
- * pp2: You will need to add new expression and statement node c
- * classes for the additional grammar elements (Switch/Postfix)
- *
- * pp3: You will need to extend the Stmt classes to implement
- * semantic analysis for rules pertaining to statements.
- *
- * pp5: You will need to extend the Stmt classes to implement
- * code generation for statements.
- *
- * Author: Deyuan Guo
- */
+
 
 
 class Decl;
@@ -420,7 +335,7 @@ public:
     void Check();
     void Check(checkStep c) { Check(); }
 
-    // code generation
+
     void Emit();
 };
 
@@ -443,7 +358,7 @@ public:
     void BuildSymTable();
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 
@@ -468,7 +383,7 @@ public:
             : ConditionalStmt(testExpr, body) {}
     bool IsLoopStmt() { return true; }
 
-    // code generation
+
     virtual const char * GetEndLoopLabel() { return end_loop_label; }
 };
 
@@ -485,7 +400,7 @@ public:
     void BuildSymTable();
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 
@@ -501,7 +416,7 @@ public:
     void BuildSymTable();
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 
@@ -518,7 +433,7 @@ public:
     void BuildSymTable();
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 
@@ -528,7 +443,7 @@ public:
     BreakStmt(yyltype loc) : Stmt(loc) {}
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 
@@ -548,7 +463,7 @@ public:
     void BuildSymTable();
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
     void GenCaseLabel();
     const char * GetCaseLabel() { return case_label; }
@@ -569,7 +484,7 @@ public:
     void BuildSymTable();
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
     bool IsSwitchStmt() { return true; }
     const char * GetEndSwitchLabel() { return end_switch_label; }
@@ -586,7 +501,7 @@ public:
 
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 
@@ -601,7 +516,7 @@ public:
 
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 
@@ -609,25 +524,11 @@ public:
 
 
 
-/* File: ast_expr.h
- * ----------------
- * The Expr class and its subclasses are used to represent
- * expressions in the parse tree.  For each expression in the
- * language (add, call, New, etc.) there is a corresponding
- * node class for that construct.
- *
- * pp3: You will need to extend the Expr classes to implement
- * semantic analysis for rules pertaining to expressions.
- *
- * pp5: You will need to extend the Expr classes to implement
- * code generation for expressions.
- *
- * Author: Deyuan Guo
- */
 
 
-class NamedType; // for new
-class Type; // for NewArray
+
+class NamedType;
+class Type;
 
 
 class Expr : public Stmt
@@ -636,21 +537,19 @@ public:
     Expr(yyltype loc) : Stmt(loc) { semantic_type = NULL; }
     Expr() : Stmt() { semantic_type = NULL; }
 
-    // code generation
+
     virtual Location * GetEmitLocDeref() { return GetEmitLoc(); }
     virtual bool IsArrayAccessRef() { return false; }
     virtual bool IsEmptyExpr() { return false; }
 };
 
-/* This node type is used for those places where an expression is optional.
- * We could use a NULL pointer, but then it adds a lot of checking for
- * NULL. By using a valid, but no-op, node, we save that trouble */
+
 class EmptyExpr : public Expr
 {
 public:
     void Check(checkStep c);
 
-    // code generation
+
     bool IsEmptyExpr() { return true; }
 };
 
@@ -664,7 +563,7 @@ public:
 
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 
@@ -678,7 +577,7 @@ public:
 
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 
@@ -692,7 +591,7 @@ public:
 
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 
@@ -706,7 +605,7 @@ public:
 
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 
@@ -716,7 +615,7 @@ public:
     NullLiteral(yyltype loc) : Expr(loc) {}
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 
@@ -737,11 +636,11 @@ class CompoundExpr : public Expr
 {
 protected:
     Operator *op;
-    Expr *left, *right; // left will be NULL if unary
+    Expr *left, *right;
 
 public:
-    CompoundExpr(Expr *lhs, Operator *op, Expr *rhs); // for binary
-    CompoundExpr(Operator *op, Expr *rhs);             // for unary
+    CompoundExpr(Expr *lhs, Operator *op, Expr *rhs);
+    CompoundExpr(Operator *op, Expr *rhs);
 
 };
 
@@ -755,7 +654,7 @@ public:
     ArithmeticExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 
@@ -768,7 +667,7 @@ public:
     RelationalExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 
@@ -781,7 +680,7 @@ public:
     EqualityExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 
@@ -795,7 +694,7 @@ public:
     LogicalExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 
@@ -808,7 +707,7 @@ public:
     AssignExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 
@@ -827,7 +726,7 @@ public:
     This(yyltype loc) : Expr(loc) {}
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 
@@ -842,43 +741,36 @@ public:
 
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
     bool IsArrayAccessRef() { return true; }
     Location * GetEmitLocDeref();
 };
 
-/* Note that field access is used both for qualified names
- * base.field and just field without qualification. We don't
- * know for sure whether there is an implicit "this." in
- * front until later on, so we use one node type for either
- * and sort it out later. */
+
 class FieldAccess : public LValue
 {
 protected:
-    Expr *base; // will be NULL if no explicit base
+    Expr *base;
     Identifier *field;
     void CheckDecl();
     void CheckType();
 
 public:
-    FieldAccess(Expr *base, Identifier *field); //ok to pass NULL base
+    FieldAccess(Expr *base, Identifier *field);
 
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
     Location * GetEmitLocDeref();
 };
 
-/* Like field access, call is used both for qualified base.field()
- * and unqualified field().  We won't figure out until later
- * whether we need implicit "this." so we use one node type for either
- * and sort it out later. */
+
 class Call : public Expr
 {
 protected:
-    Expr *base; // will be NULL if no explicit base
+    Expr *base;
     Identifier *field;
     List<Expr*> *actuals;
     void CheckDecl();
@@ -890,7 +782,7 @@ public:
 
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 
@@ -906,7 +798,7 @@ public:
 
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 
@@ -922,7 +814,7 @@ public:
 
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 
@@ -932,7 +824,7 @@ public:
     ReadIntegerExpr(yyltype loc) : Expr(loc) {}
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 
@@ -942,7 +834,7 @@ public:
     ReadLineExpr(yyltype loc) : Expr (loc) {}
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 
@@ -959,7 +851,7 @@ public:
 
     void Check(checkStep c);
 
-    // code generation
+
     void Emit();
 };
 

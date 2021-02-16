@@ -1,9 +1,4 @@
-/* File: codegen.cc
- * ----------------
- * Implementation for the CodeGenerator class. The methods don't do anything
- * too fancy, mostly just create objects of the various Tac instruction
- * classes and append them to the list.
- */
+
 
 #include "codegen.h"
 #include <string.h>
@@ -17,9 +12,9 @@
 Location *CodeGenerator::ThisPtr = new Location(fpRelative, 4, "this");
 
 CodeGenerator::CodeGenerator() {
-    local_loc = OffsetToFirstLocal;     // -8, -12, -16, ...
-    param_loc = OffsetToFirstParam;     // 4, 8, 12, ...
-    globl_loc = OffsetToFirstGlobal;    // 0, 4, 8, ...
+    local_loc = OffsetToFirstLocal;
+    param_loc = OffsetToFirstParam;
+    globl_loc = OffsetToFirstGlobal;
 }
 
 int CodeGenerator::GetNextLocalLoc() {
@@ -61,10 +56,7 @@ Location *CodeGenerator::GenTempVar() {
     char temp[10];
     Location *result = NULL;
     sprintf(temp, "_tmp%d", nextTempNum++);
-    /* pp5: need to create variable in proper location
-       in stack frame for use as temporary. Until you
-       do that, the assert below will always fail to remind
-       you this needs to be implemented  */
+
     result = new Location(fpRelative, GetNextLocalLoc(), temp);
 
     return result;
@@ -172,7 +164,7 @@ static struct _builtin {
         {"_PrintString", 1, false},
         {"_PrintBool",   1, false},
         {"_Halt",        0, false},
-//    {"_SemanError", 0, false}
+
 };
 
 Location *CodeGenerator::GenBuiltInCall(BuiltIn bn, Location *arg1,
@@ -212,7 +204,7 @@ void CodeGenerator::DoFinalCodeGen() {
 }
 
 
-// TAC Code
+
 
 Location::Location(Segment s, int o, const char *name) :
         variableName(strdup(name)), segment(s), offset(o), base(NULL) {}
@@ -227,7 +219,7 @@ Location::Location(Segment s, int o, const char *name, Location *b) :
 void Instruction::Emit(Mips *mips) {
     Mips::CurrentInstruction ci(*mips, this);
     if (*printed)
-        mips->Emit("# %s", printed);   // emit TAC as comment into assembly
+        mips->Emit("# %s", printed);
     EmitSpecific(mips);
 }
 
@@ -314,8 +306,8 @@ BinaryOp::OpCode BinaryOp::OpCodeForName(const char *name) {
     for (int i = 0; i < NumOps; i++)
         if (opName[i] && !strcmp(opName[i], name))
             return (OpCode)i;
-//    Failure("Unrecognized Tac operator: '%s'\n", name);
-    return Add; // can't get here, but compiler doesn't know that
+
+    return Add;
 }
 
 BinaryOp::BinaryOp(OpCode c, Location *d, Location *o1, Location *o2)
@@ -362,7 +354,7 @@ void IfZ::EmitSpecific(Mips *mips) {
 
 BeginFunc::BeginFunc() {
     sprintf(printed,"BeginFunc (unassigned)");
-    frameSize = -555; // used as sentinel to recognized unassigned value
+    frameSize = -555;
 }
 
 void BeginFunc::SetFrameSize(int numBytesForAllLocalsAndTemps) {
@@ -443,11 +435,11 @@ void VTable::EmitSpecific(Mips *mips) {
 
 
 
-// Mips Code
 
 
-// Helper to check if two variable locations are one and the same
-// (same name, segment, and offset)
+
+
+
 static bool LocationsAreSame(Location *var1, Location *var2) {
     return (var1 == var2 ||
             (var1 && var2
@@ -456,42 +448,29 @@ static bool LocationsAreSame(Location *var1, Location *var2) {
              && var1->GetOffset() == var2->GetOffset()));
 }
 
-/* Method: SpillRegister
- * ---------------------
- * Used to spill a register from reg to dst.  All it does is emit a store
- * from that register to its location on the stack.
- */
+
 void Mips::SpillRegister(Location *dst, Register reg) {
     ;
     const char *offsetFromWhere = dst->GetSegment() == fpRelative
                                   ? regs[fp].name : regs[gp].name;
-    ; // all variables are 4 bytes in size
+    ;
     Emit("sw %s, %d(%s)\t# spill %s from %s to %s%+d", regs[reg].name,
          dst->GetOffset(), offsetFromWhere, dst->GetName(), regs[reg].name,
          offsetFromWhere, dst->GetOffset());
 }
 
-/* Method: FillRegister
- * --------------------
- * Fill a register from location src into reg.
- * Simply load a word into a register.
- */
+
 void Mips::FillRegister(Location *src, Register reg) {
     ;
     const char *offsetFromWhere = src->GetSegment() == fpRelative
                                   ? regs[fp].name : regs[gp].name;
-    ; // all variables are 4 bytes in size
+    ;
     Emit("lw %s, %d(%s)\t# fill %s to %s from %s%+d", regs[reg].name,
          src->GetOffset(), offsetFromWhere, src->GetName(), regs[reg].name,
          offsetFromWhere, src->GetOffset());
 }
 
-/* Method: Emit
- * ------------
- * General purpose helper used to emit assembly instructions in
- * a reasonable tidy manner.  Takes printf-style formatting strings
- * and variable arguments.
- */
+
 void Mips::Emit(const char *fmt, ...) {
     va_list args;
     char buf[1024];
@@ -501,26 +480,21 @@ void Mips::Emit(const char *fmt, ...) {
     va_end(args);
 
     for (int i = 1023; i >= 0; i--) {
-//        if (buf[i] == '"')
-//            break;
+
+
         if (buf[i] == '#' && buf[i+1]==' ') {
             buf[i] = 0;
             break;
         }
     }
 
-    if (buf[strlen(buf) - 1] != ':') printf("\t"); // don't tab in labels
-    if (buf[0] != '#') printf("  ");   // outdent comments a little
+    if (buf[strlen(buf) - 1] != ':') printf("\t");
+    if (buf[0] != '#') printf("  ");
     printf("%s", buf);
-    if (buf[strlen(buf) - 1] != '\n') printf("\n"); // end with a newline
+    if (buf[strlen(buf) - 1] != '\n') printf("\n");
 }
 
-/* Method: EmitLoadConstant
- * ------------------------
- * Used to assign variable an integer constant value.  Slaves dst into
- * a register (using GetRegister above) and then emits an li (load
- * immediate) instruction with the constant value.
- */
+
 void Mips::EmitLoadConstant(Location *dst, int val) {
     Register r = rd;
     Emit("li %s, %d\t\t# load constant value %d into %s", regs[r].name,
@@ -528,13 +502,7 @@ void Mips::EmitLoadConstant(Location *dst, int val) {
     SpillRegister(dst, rd);
 }
 
-/* Method: EmitLoadStringLiteral
- * ------------------------------
- * Used to assign a variable a pointer to string constant. Emits
- * assembly directives to create a new null-terminated string in the
- * data segment and assigns it a unique label. Slaves dst into a register
- * and loads that label address into the register.
- */
+
 void Mips::EmitLoadStringLiteral(Location *dst, const char *str) {
     static int strNum = 1;
     char label[16];
@@ -545,35 +513,19 @@ void Mips::EmitLoadStringLiteral(Location *dst, const char *str) {
     EmitLoadLabel(dst, label);
 }
 
-/* Method: EmitLoadLabel
- * ---------------------
- * Used to load a label (ie address in text/data segment) into a variable.
- * Slaves dst into a register and emits an la (load address) instruction
- */
+
 void Mips::EmitLoadLabel(Location *dst, const char *label) {
     Emit("la %s, %s\t# load label", regs[rd].name, label);
     SpillRegister(dst, rd);
 }
 
-/* Method: EmitCopy
- * ----------------
- * Used to copy the value of one variable to another.  Slaves both
- * src and dst into registers and then emits a move instruction to
- * copy the contents from src to dst.
- */
+
 void Mips::EmitCopy(Location *dst, Location *src) {
     FillRegister(src, rd);
     SpillRegister(dst, rd);
 }
 
-/* Method: EmitLoad
- * ----------------
- * Used to assign dst the contents of memory at the address in reference,
- * potentially with some positive/negative offset (defaults to 0).
- * Slaves both ref and dst to registers, then emits a lw instruction
- * using constant-offset addressing mode y(rx) which accesses the address
- * at an offset of y bytes from the address currently contained in rx.
- */
+
 void Mips::EmitLoad(Location *dst, Location *reference, int offset) {
     FillRegister(reference, rs);
     Emit("lw %s, %d(%s) \t# load with offset", regs[rd].name,
@@ -581,14 +533,7 @@ void Mips::EmitLoad(Location *dst, Location *reference, int offset) {
     SpillRegister(dst, rd);
 }
 
-/* Method: EmitStore
- * -----------------
- * Used to write value to  memory at the address in reference,
- * potentially with some positive/negative offset (defaults to 0).
- * Slaves both ref and dst to registers, then emits a sw instruction
- * using constant-offset addressing mode y(rx) which writes to the address
- * at an offset of y bytes from the address currently contained in rx.
- */
+
 void Mips::EmitStore(Location *reference, Location *value, int offset) {
     FillRegister(value, rs);
     FillRegister(reference, rd);
@@ -596,14 +541,7 @@ void Mips::EmitStore(Location *reference, Location *value, int offset) {
          regs[rs].name, offset, regs[rd].name);
 }
 
-/* Method: EmitBinaryOp
- * --------------------
- * Used to perform a binary operation on 2 operands and store result
- * in dst. All binary forms for arithmetic, logical, relational, equality
- * use this method. Slaves both operands and dst to registers, then
- * emits the appropriate instruction by looking up the mips name
- * for the particular op code.
- */
+
 void Mips::EmitBinaryOp(BinaryOp::OpCode code, Location *dst,
                         Location *op1, Location *op2) {
     FillRegister(op1, rs);
@@ -613,65 +551,31 @@ void Mips::EmitBinaryOp(BinaryOp::OpCode code, Location *dst,
     SpillRegister(dst, rd);
 }
 
-/* Method: EmitLabel
- * -----------------
- * Used to emit label marker. Before a label, we spill all registers since
- * we can't be sure what the situation upon arriving at this label (ie
- * starts new basic block), and rather than try to be clever, we just
- * wipe the slate clean.
- */
+
 void Mips::EmitLabel(const char *label) {
     Emit("%s:", label);
 }
 
-/* Method: EmitGoto
- * ----------------
- * Used for an unconditional transfer to a named label. Before a goto,
- * we spill all registers, since we don't know what the situation is
- * we are heading to (ie this ends current basic block) and rather than
- * try to be clever, we just wipe slate clean.
- */
+
 void Mips::EmitGoto(const char *label) {
     Emit("b %s\t\t# unconditional branch", label);
 }
 
-/* Method: EmitIfZ
- * ---------------
- * Used for a conditional branch based on value of test variable.
- * We slave test var to register and use in the emitted test instruction,
- * either beqz. See comments above on Goto for why we spill
- * all registers here.
- */
+
 void Mips::EmitIfZ(Location *test, const char *label) {
     FillRegister(test, rs);
     Emit("beqz %s, %s\t# branch if %s is zero ", regs[rs].name, label,
          test->GetName());
 }
 
-/* Method: EmitParam
- * -----------------
- * Used to push a parameter on the stack in anticipation of upcoming
- * function call. Decrements the stack pointer by 4. Slaves argument into
- * register and then stores contents to location just made at end of
- * stack.
- */
+
 void Mips::EmitParam(Location *arg) {
     Emit("subu $sp, $sp, 4\t# decrement sp to make space for param");
     FillRegister(arg, rs);
     Emit("sw %s, 4($sp)\t# copy param value to stack", regs[rs].name);
 }
 
-/* Method: EmitCallInstr
- * ---------------------
- * Used to effect a function call. All necessary arguments should have
- * already been pushed on the stack, this is the last step that
- * transfers control from caller to callee.  See comments on Goto method
- * above for why we spill all registers before making the jump. We issue
- * jal for a label, a jalr if address in register. Both will save the
- * return address in $ra. If there is an expected result passed, we slave
- * the var to a register and copy function return value from $v0 into that
- * register.
- */
+
 void Mips::EmitCallInstr(Location *result, const char *fn, bool isLabel) {
     Emit("%s %-15s\t# jump to function", isLabel ? "jal" : "jalr", fn);
     if (result != NULL) {
@@ -681,7 +585,7 @@ void Mips::EmitCallInstr(Location *result, const char *fn, bool isLabel) {
     }
 }
 
-// Two covers for the above method for specific LCall/ACall variants
+
 void Mips::EmitLCall(Location *dst, const char *label) {
     EmitCallInstr(dst, label, true);
 }
@@ -691,30 +595,13 @@ void Mips::EmitACall(Location *dst, Location *fn) {
     EmitCallInstr(dst, regs[rs].name, false);
 }
 
-/*
- * We remove all parameters from the stack after a completed call
- * by adjusting the stack pointer upwards.
- */
+
 void Mips::EmitPopParams(int bytes) {
     if (bytes != 0)
         Emit("add $sp, $sp, %d\t# pop params off stack", bytes);
 }
 
-/* Method: EmitReturn
- * ------------------
- * Used to emit code for returning from a function (either from an
- * explicit return or falling off the end of the function body).
- * If there is an expression to return, we slave that variable into
- * a register and move its contents to $v0 (the standard register for
- * function result).  Before exiting, we spill dirty registers (to
- * commit contents of slaved registers to memory, necessary for
- * consistency, see comments at SpillForEndFunction above). We also
- * do the last part of the callee's job in function call protocol,
- * which is to remove our locals/temps from the stack, remove
- * saved registers ($fp and $ra) and restore previous values of
- * $fp and $ra so everything is returned to the state we entered.
- * We then emit jr to jump to the saved $ra.
- */
+
 void Mips::EmitReturn(Location *returnVal) {
     if (returnVal != NULL) {
         FillRegister(returnVal, rd);
@@ -727,14 +614,7 @@ void Mips::EmitReturn(Location *returnVal) {
     Emit("jr $ra\t\t# return from function");
 }
 
-/* Method: EmitBeginFunction
- * -------------------------
- * Used to handle the callee's part of the function call protocol
- * upon entering a new function. We decrement the $sp to make space
- * and then save the current values of $fp and $ra (since we are
- * going to change them), then set up the $fp and bump the $sp down
- * to make space for all our locals/temps.
- */
+
 void Mips::EmitBeginFunction(int stackFrameSize) {
     ;
     Emit("subu $sp, $sp, 8\t# decrement sp to make space to save ra, fp");
@@ -749,24 +629,14 @@ void Mips::EmitBeginFunction(int stackFrameSize) {
 }
 
 
-/* Method: EmitEndFunction
- * -----------------------
- * Used to end the body of a function. Does an implicit return in fall off
- * case to clean up stack frame, return to caller etc. See comments on
- * EmitReturn above.
- */
+
 void Mips::EmitEndFunction() {
     Emit("# (below handles reaching end of fn body with no explicit return)");
     EmitReturn(NULL);
 }
 
 
-/* Method: EmitVTable
- * ------------------
- * Used to layout a vtable. Uses assembly directives to set up new
- * entry in data segment, emits label, and lays out the function
- * labels one after another.
- */
+
 void Mips::EmitVTable(const char *label, List<const char *> *methodLabels) {
     Emit(".data");
     Emit(".align 2");
@@ -776,12 +646,7 @@ void Mips::EmitVTable(const char *label, List<const char *> *methodLabels) {
     Emit(".text");
 }
 
-/* Method: EmitPreamble
- * --------------------
- * Used to emit the starting sequence needed for a program. Not much
- * here, but need to indicate what follows is in text segment and
- * needs to be aligned on word boundary. main is our only global symbol.
- */
+
 void Mips::EmitPreamble() {
     Emit("# standard Decaf preamble ");
     Emit(".text");
@@ -789,12 +654,7 @@ void Mips::EmitPreamble() {
     Emit(".globl main");
 }
 
-/* Method: NameForTac
- * ------------------
- * Returns the appropriate MIPS instruction (add, seq, etc.) for
- * a given BinaryOp:OpCode (BinaryOp::Add, BinaryOp:Equals, etc.).
- * Asserts if asked for name of an unset/out of bounds code.
- */
+
 const char *Mips::NameForTac(BinaryOp::OpCode code) {
     ;
     const char *name = mipsName[code];
@@ -802,11 +662,7 @@ const char *Mips::NameForTac(BinaryOp::OpCode code) {
     return name;
 }
 
-/* Constructor
- * ----------
- * Constructor sets up the mips names and register descriptors to
- * the initial starting state.
- */
+
 Mips::Mips() {
     mipsName[BinaryOp::Add] = "add";
     mipsName[BinaryOp::Sub] = "sub";

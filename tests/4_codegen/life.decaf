@@ -1,56 +1,7 @@
-/* 
-The Game of Life by dsheffie and qtedq (Summer 2008)
- 
- 
-When I first learned MIPS assembly, the assignment was
-to program the Game of Life in MIPS using the SPIM 
-simulator.  
-  
-I thought it would be interesting to see how dcc compares
-to my hand-coded version.  It is also a reasonably useful
-sanity check as it can execute a reasonably large amount 
-of code without requiring much user intervention 
- 
-My hand-coded version has 542 lines of assembly.
-Using DCC, the program has 3595 lines of assembly!
- 
-The game rules....from Brown Univ CS31 Life handout:
- 
-The game starts of with an arbitrary initial population (
-dictated by whether a particular cell contains an organism or not). 
-
-Occupied cells are referred to as “alive”, whereas unoccupied cells 
-are “dead”. 
-
-From this initial population the next generation of organisms 
-is obtained by applying the following rules: 
-
-1. The neighbors of a cell are the 8 cells that immediately surround it 
-vertically, horizontally and diagonally. 
-
-2. If a cell is alive and has 2 or 3 live neighbors, it will remain alive in 
-the next generation. 
-
-3. If a cell is alive and has fewer than 2 live neighbors, it will die of 
-loneliness. 
-
-4. If a cell is alive and has 4 or more live neighbors, it will die of over- 
-crowding 
-
-5. If a cell is dead and has exactly 3 live neighbors, a new organism will 
-be born in that cell. Otherwise, it remains dead in the next generation. 
-
-6. All births and deaths take place at exactly the same time, so that all 
-the cells’ neighbors are counted simultaneously (based on the current 
-generation) before the next generation is produced. It is possible for 
-a new cell to be born based on counting a neighbor in the current 
-generation that will be dead in the next generation.
-*/
 
 
-/* This random module (and comment) is copied
- * from the Minesweeper program.  The rest is mine.
- */
+
+
 class rndModule {
 
   int seed;
@@ -72,9 +23,7 @@ class rndModule {
 
 
 
-/* An element in the Game of Life
- * Can either be life or dead.
- */
+
 
 class cell
 {
@@ -95,9 +44,7 @@ class cell
   
 }
 
-/* Synthesize smart 2d-arrays to 
- * detect OOB moves
- */
+
 
 class column
 {
@@ -113,8 +60,7 @@ class column
     arr[y] = c;
   }
 
-  /* Allocate memory and initialize
-   * cells to false */
+
   void Init(int length)
   {
     int y;
@@ -130,7 +76,7 @@ class column
 }
 
 
-/* The synthesized matrix class */
+
 class matrix
 {
   int x_dim;
@@ -157,10 +103,7 @@ class matrix
       column mcol;
       cell mcell;
 
-    /* Handling out-of-bound accesses
-     * in Get and Set is easier than
-     * dealing with a bunch of conditionals
-     * in a loop */
+
 
       if(x < 0 ) return;
       if(x >= this.x_dim) return;
@@ -179,10 +122,7 @@ class matrix
     column mcol;
     cell mcell;
 
-    /* Handling out-of-bound accesses
-     * in Get and Set is easier than
-     * dealing with a bunch of conditionals
-     * in a loop */
+
     if(x < 0 ) return false;
     if(x >= this.x_dim) return false;
 
@@ -198,21 +138,19 @@ class matrix
   
 }
 
-/* The Game of Life */
+
 class life
 {
-  /* Reference to current matrix holding 
-   * the live cells */
+
   matrix current;
  
-  /* Two matrices used to track the current
-   * life states */
+
   matrix m0;
   matrix m1;
 
   rndModule rnd;
   
-  /* The board dimensions */
+
   int x_dim;
   int y_dim;
 
@@ -234,7 +172,7 @@ class life
     m0.Init(x_dim, y_dim);
     m1.Init(x_dim, y_dim);
 
-    /* Clear memory */
+
     for(y = 0; y < this.y_dim; y = y + 1)
       {
 	for(x = 0; x < this.x_dim; x = x + 1)
@@ -246,16 +184,16 @@ class life
     
   }
 
-  /* Used to set initial game state */
+
   bool SetInit(int x, int y, bool state)
   {
-    /* Detect OOB */
+
     if(x < 0) return false;
     if(y < 0) return false;
     if(x >= this.x_dim) return false;
     if(y >= this.y_dim) return false;
 
-    /* Set cell */
+
     current.Set(x,y,state);
     return true;
   }
@@ -271,9 +209,7 @@ class life
       {
 	for(x = 0; x < this.x_dim; x = x + 1)
 	  {
-	    /* Print 0/1 instead of true and false 
-	     * because true and false have different
-             * string lengths, and it looks funny */
+
 
 	     if(current.Get(x,y))
              {
@@ -294,7 +230,7 @@ class life
 
   }
 
-  /* The actual simulation command */  
+
   void DoLife()
   {
     int x;
@@ -305,9 +241,7 @@ class life
 
     matrix n;
 
-    /* The reference current keeps track 
-     * of the matrix holding the current
-     * game state */
+
 
     if(current == m0)
       {
@@ -318,7 +252,7 @@ class life
 	n = m0;
       }
 
-    /* Iterate over the entire matrix */ 
+
      
     for(y = 0; y < this.y_dim; y = y + 1)
       {
@@ -329,17 +263,16 @@ class life
 	    neigh_count = 0;
 	    my_state = current.Get(x,y);
 
-	    /* Loop around cells 8 nearest neighbors */
+
 	    for(j = (y - 1); j < (y + 2); j = j + 1)
 	      {
 		for(i = (x - 1); i < (x + 2); i = i + 1)
 		  {
-		    /* Can't count ourself */
+
 		    bool skip;
 		    skip = (x == i) && (y == j);
 		    
-                    /* Increment neighbor count if 
-                     * the cells are alive */
+
 		    if((!skip) && current.Get(i,j))
 		      {
 			neigh_count = neigh_count + 1;
@@ -349,12 +282,10 @@ class life
 		
 	      }
 
-	    /* If the current cell is alive in this generation */  
+
 	    if(my_state)
 	      {
-		/* Live cells stay alive if they have 
-		 * two or three neighbors; otherwise,
-                 * the die */ 
+
 		if((neigh_count == 2) || (neigh_count == 3)) 
 		  {
 		    n.Set(x,y,true);
@@ -364,17 +295,16 @@ class life
 		    n.Set(x,y,false);
 		  }
 	      }
-            /* If the current cell is dead in this generation */
+
 	    else
 	      {
-                /* The cell can only be "born" if 
-                 * it has three neighbors */
+
 		if(neigh_count == 3)
 		  {
 		    n.Set(x,y,true);
 		  }
 
-                /* Otherwise, it remains dead */
+
 		else
 		  {
 		    n.Set(x,y,false);
@@ -387,15 +317,13 @@ class life
       }
 
       
-    /* Update matrix reference to point the newest 
-     * matrix state */
+
     current = n;
 
 
   }
   
-  /* Run the life simulation for 
-   * certain number of generations */
+
   void runLife(int gen)
   {
     int i;
@@ -438,7 +366,7 @@ class life
      use_rand = 0;
      Print("The Game of Life using (Brown Univ) CS31 Rules\n");
      
-     /* Get X game board dimension */
+
      Print("Enter X dimension for game board\n");
      while(x <= 0)
      {
@@ -449,7 +377,7 @@ class life
        }
      }
 
-     /* Get Y game board dimension */
+
      Print("Enter Y dimension for game board\n");
      while(y <= 0)
      {
@@ -460,7 +388,7 @@ class life
        }
      }
     
-    /* Initialize board */       
+
     this.Init(x,y);
     x = 0;
     y = 0;
@@ -480,8 +408,7 @@ class life
 
        this.rnd.Init(x);
 
-       /* Only generate as many random variables
-        * as can fit on the board */
+
 	
        gen = this.rnd.RndInt(this.x_dim * this.y_dim);
        

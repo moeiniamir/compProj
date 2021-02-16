@@ -1,7 +1,4 @@
-/* File: errors.cc
- * ---------------
- * Implementation for error-reporting class.
- */
+
 
 #include "globals.h"
 #include <iostream>
@@ -10,7 +7,7 @@
 #include <stdio.h>
 using namespace std;
 
-#include "scanner.h" // for GetLineNumbered
+#include "scanner.h"
 #include "ast.h"
 
 

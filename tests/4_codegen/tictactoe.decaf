@@ -1,8 +1,8 @@
-// Sabine Gounder, CS143 Winter 2000-01
 
 
 
-// Adapted from Peter Mork's BlackJack rndModule class
+
+
 class rndModule {
 
   int seed;
@@ -24,7 +24,7 @@ class rndModule {
   }
 }
 
-// Global
+
 rndModule gRnd;
 
 class Square {
@@ -54,14 +54,14 @@ class Square {
       this.mark = mark;
   }
 
-  bool IsMarked(string mark) { // Marks are generally 'X' or 'O'
+  bool IsMarked(string mark) {
    if (isEmpty) return false;
    else return (this.mark == mark);
   }
 }
 
 class Player {
-  string mark; // 'X' or 'O'
+  string mark;
   string name;
   
   string GetMark() {
@@ -85,7 +85,7 @@ class Human extends Player{
      int row;
      row = -1;
 
-     // Error check that row # is legal
+
      while (row > 3 || row < 1) {
        Print(name, " enter a row between 1 and 3: ");
        row = ReadInteger();
@@ -99,7 +99,7 @@ class Human extends Player{
      int column;
      column = -1;
 
-     // Error check that the column # is legal
+
      while (column > 3 || column < 1) {
      	Print(name, " enter a column between 1 and 3: ");
         column = ReadInteger();
@@ -123,7 +123,7 @@ class Grid {
      this.squares[i] = NewArray(3, Square);
      i = i + 1;
    } 
-   // Set all the squares to be empty
+
    i = 0;
    while (i < 3) {
      j = 0;
@@ -206,7 +206,7 @@ class Grid {
 	return true;
   }
   
-  // returns if it was able to block the play of a player with the mark X
+
   bool BlockedPlay(string enemyMark, string playerMark) {
     int row;
     int column;
@@ -214,7 +214,7 @@ class Grid {
     row = -1;
     column = -1;
    
-    // Block row wins -- brute force implementation 
+
     if (this.squares[0][0].IsMarked(enemyMark) && this.squares[0][1].IsMarked(enemyMark) && !this.squares[0][2].IsMarked(playerMark)) {
  	row = 0;
         column = 2;
@@ -239,7 +239,7 @@ class Grid {
  	row = 2;
         column = 0;
     }
-    // Block column wins
+
     else if (this.squares[0][0].IsMarked(enemyMark) && this.squares[1][0].IsMarked(enemyMark) && !this.squares[2][0].IsMarked(playerMark)) {
  	row = 2;
         column = 0;
@@ -264,7 +264,7 @@ class Grid {
  	row = 0;
         column = 2;
     }
-    // Block diagonal wins
+
     else if (this.squares[0][0].IsMarked(enemyMark) && this.squares[1][1].IsMarked(enemyMark) && !this.squares[2][2].IsMarked(playerMark)) {
  	row = 2;
         column = 2;
@@ -301,8 +301,8 @@ class Computer extends Player {
     bool legalMove;    
     legalMove = false;
  
-    // First the computer tries to block a win. If it can't, it chooses a
-    // square randomly. 
+
+
     if (!grid.BlockedPlay(human.GetMark(), this.GetMark())) {
       while (!legalMove) {
       	row = gRnd.RndInt(0,2);
@@ -350,7 +350,7 @@ void main()
   
   grid.Draw(); 
   while (!gameOver) {
-     // The Player Takes A Turn
+
      moveLegal = false;
      while(!moveLegal) {
      	row = human.GetRow();
@@ -360,8 +360,8 @@ void main()
      	else grid.Update(row,column,human.GetMark());
       }
 
-      // If the human didn't win and there isn't a tie, 
-      // the computer takes a turn
+
+
       if (!grid.GameNotWon(human)) {
 	Print(human.GetName(), ", you won!\n"); 
    	gameOver = true;

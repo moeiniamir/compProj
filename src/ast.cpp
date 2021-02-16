@@ -1,6 +1,4 @@
-/* File: ast.cc
- * ------------
- */
+
 
 #include "ast.h"
 #include <string.h>
@@ -9,7 +7,7 @@
 #include "ds.h"
 #include <iostream>
 
-// the global code generator class.
+
 CodeGenerator *CG = new CodeGenerator();
 
 Node::Node(yyltype loc) {
@@ -22,14 +20,7 @@ Node::Node() {
     parent = NULL;
 }
 
-/* The Print method is used to print the parse tree nodes.
- * If this node has a location (most nodes do, but some do not), it
- * will first print the line number to help you match the parse tree
- * back to the source text. It then indents the proper number of levels
- * and prints the "print name" of the node. It then will invoke the
- * virtual function PrintChildren which is expected to print the
- * internals of the node (itself & children) as appropriate.
- */
+
 
 
 Identifier::Identifier(yyltype loc, const char *n) : Node(loc) {
@@ -69,10 +60,7 @@ void Identifier::AddPrefix(const char *prefix) {
     name = s;
 }
 
-/* File: ast_decl.cc
- * -----------------
- * Implementation of Decl node classes.
- */
+
 
 
 
@@ -127,7 +115,7 @@ void VariableDecl::AssignOffset() {
 
 void VariableDecl::AssignMemberOffset(bool inClass, int offset) {
     class_member_ofst = offset;
-    // set location for var members of class.
+
     asm_loc = new Location(fpRelative, offset, id->GetIdName(), CG->ThisPtr);
 }
 
@@ -138,14 +126,14 @@ void VariableDecl::Emit() {
     }
 
     if (!asm_loc) {
-        // some auto variables.
+
         asm_loc = new Location(fpRelative, CG->GetNextLocalLoc(),
                                id->GetIdName());
     }
 }
 
 ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<Decl*> *m) : Decl(n) {
-    // extends can be NULL, impl & mem may be empty lists but cannot be NULL
+
 
     extends = ex;
     if (extends) extends->SetParent(this);
@@ -157,7 +145,7 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
 
 void ClassDecl::BuildSymTable() {
     if (scopeHandler->LocalLookup(this->GetId())) {
-        // if two local symbols have the same name, then report an error.
+
         Decl *d = scopeHandler->Lookup(this->GetId());
         semantic_error = 1;
         return;
@@ -165,13 +153,13 @@ void ClassDecl::BuildSymTable() {
         idx = scopeHandler->InsertSymbol(this);
         id->SetDecl(this);
     }
-    // record the owner of the current class scope.
+
     scopeHandler->BuildScope(this->GetId()->GetIdName());
     if (extends) {
-        // record the parent of the current class.
+
         scopeHandler->SetScopeParent(extends->GetId()->GetIdName());
     }
-    // record the implements of the current class.
+
     for (int i = 0; i < implements->NumElements(); i++) {
         scopeHandler->SetInterface(implements->Nth(i)->GetId()->GetIdName());
     }
@@ -181,11 +169,11 @@ void ClassDecl::BuildSymTable() {
 
 void ClassDecl::CheckDecl() {
     id->Check(sem_decl);
-    // check extends.
+
     if (extends) {
         extends->Check(sem_decl, classReason);
     }
-    // check interface.
+
     for (int i = 0; i < implements->NumElements(); i++) {
         implements->Nth(i)->Check(sem_decl, interfaceReason);
     }
@@ -202,67 +190,67 @@ void ClassDecl::CheckInherit() {
 
     for (int i = 0; i < members->NumElements(); i++) {
         Decl *d = members->Nth(i);
-        // already inserted into symbol table.
+
 
         if (d->IsVariableDecl()) {
-            // check class inheritance of variables.
+
             Decl *t = scopeHandler->LookupParent(d->GetId());
             if (t != NULL) {
-                // subclass cannot override inherited variables.
+
                 semantic_error = 1;
                 return;
             }
-            // check interface inheritance of variables.
+
             t = scopeHandler->LookupInterface(d->GetId());
             if (t != NULL) {
-                // variable names conflict with interface method names.
+
                 semantic_error = 1;
                 return;
             }
 
         } else if (d->IsFunctionDecl()) {
-            // check class inheritance of functions.
+
             Decl *t = scopeHandler->LookupParent(d->GetId());
             if (t != NULL) {
                 if (!t->IsFunctionDecl()) {
                     semantic_error = 1;
                     return;
                 } else {
-                    // compare the function signature.
+
                     FunctionDecl *fn1 = dynamic_cast<FunctionDecl*>(d);
                     FunctionDecl *fn2 = dynamic_cast<FunctionDecl*>(t);
-                    if (fn1->GetType() && fn2->GetType() // correct return type
+                    if (fn1->GetType() && fn2->GetType()
                         && !fn1->IsEquivalentTo(fn2)) {
-                        // subclass cannot overload inherited functions.
+
                         semantic_error = 1;
                         return;
                     }
                 }
             }
-            // check interface inheritance of functions.
+
             t = scopeHandler->LookupInterface(d->GetId());
             if (t != NULL) {
-                // compare the function signature.
+
                 FunctionDecl *fn1 = dynamic_cast<FunctionDecl*>(d);
                 FunctionDecl *fn2 = dynamic_cast<FunctionDecl*>(t);
-                if (fn1->GetType() && fn2->GetType() // correct return type
+                if (fn1->GetType() && fn2->GetType()
                     && !fn1->IsEquivalentTo(fn2)) {
-                    // subclass cannot overload inherited functions.
+
                     semantic_error = 1;
                     return;
                 }
             }
-            // check scopes within the function and keep active scope correct.
+
             d->Check(sem_inh);
         }
     }
 
-    // Check the full implementation of interface methods.
+
     for (int i = 0; i < implements->NumElements(); i++) {
         Decl *d = implements->Nth(i)->GetId()->GetDecl();
         if (d != NULL) {
             List<Decl*> *m = dynamic_cast<InterfaceDecl*>(d)->GetMembers();
-            // check the members of each interface.
+
             for (int j = 0; j < m->NumElements(); j++) {
                 Identifier *mid = m->Nth(j)->GetId();
                 Decl *t = scopeHandler->LookupField(this->id, mid);
@@ -271,7 +259,7 @@ void ClassDecl::CheckInherit() {
                     return;
                     break;
                 } else {
-                    // check the function signature.
+
                     FunctionDecl *fn1 = dynamic_cast<FunctionDecl*>(m->Nth(j));
                     FunctionDecl *fn2 = dynamic_cast<FunctionDecl*>(t);
                     if (!fn1 || !fn2 || !fn1->GetType() || !fn2->GetType()
@@ -306,12 +294,12 @@ void ClassDecl::Check(checkStep c) {
 bool ClassDecl::IsChildOf(Decl *other) {
     if (other->IsClassDecl()) {
         if (id->IsEquivalentTo(other->GetId())) {
-            // self.
+
             return true;
         } else if (!extends) {
             return false;
         } else {
-            // look up all the parent classes.
+
             Decl *d = extends->GetId()->GetDecl();
             return dynamic_cast<ClassDecl*>(d)->IsChildOf(other);
         }
@@ -325,7 +313,7 @@ bool ClassDecl::IsChildOf(Decl *other) {
         if (!extends) {
             return false;
         } else {
-            // look up all the parent classes' interfaces.
+
             Decl *d = extends->GetId()->GetDecl();
             return dynamic_cast<ClassDecl*>(d)->IsChildOf(other);
         }
@@ -346,8 +334,8 @@ void ClassDecl::AddMembersToList(List<VariableDecl*> *vars, List<FunctionDecl*> 
 }
 
 void ClassDecl::AssignOffset() {
-    // deal with class inheritance.
-    // add all parents' methods.
+
+
     var_members = new List<VariableDecl*>;
     methods = new List<FunctionDecl*>;
     ClassDecl *c = this;
@@ -358,14 +346,14 @@ void ClassDecl::AssignOffset() {
         c = dynamic_cast<ClassDecl*>(t->GetId()->GetDecl());
     }
 
-    // delete override methods.
+
     for (int i = 0; i < methods->NumElements(); i++) {
         FunctionDecl *f1 = methods->Nth(i);
         for (int j = i + 1; j < methods->NumElements(); j++) {
             FunctionDecl *f2 = methods->Nth(j);
             if (!strcmp(f1->GetId()->GetIdName(), f2->GetId()->GetIdName())) {
-                // replace the parent's method with child's method, then the
-                // order of the methods can be compatible with both of them.
+
+
                 methods->RemoveAt(i);
                 methods->InsertAt(f2, i);
                 methods->RemoveAt(j);
@@ -374,16 +362,16 @@ void ClassDecl::AssignOffset() {
         }
     }
 
-//    PrintDebug("tac+", "Class Methods of %s:", id->GetIdName());
+
     for (int i = 0; i < methods->NumElements(); i++) {
-//        PrintDebug("tac+", "%s", methods->Nth(i)->GetId()->GetIdName());
-    }
-//    PrintDebug("tac+", "Class Vars of %s:", id->GetIdName());
-    for (int i = 0; i < var_members->NumElements(); i++) {
-//        PrintDebug("tac+", "%s", var_members->Nth(i)->GetId()->GetIdName());
+
     }
 
-    // assign offset for fn members.
+    for (int i = 0; i < var_members->NumElements(); i++) {
+
+    }
+
+
     instance_size = var_members->NumElements() * 4 + 4;
     vtable_size = methods->NumElements() * 4;
 
@@ -394,7 +382,7 @@ void ClassDecl::AssignOffset() {
             var_offset -= 4;
             d->AssignMemberOffset(true, var_offset);
         } else if (d->IsFunctionDecl()) {
-            // find the right offset.
+
             for (int i = 0; i < methods->NumElements(); i++) {
                 FunctionDecl *f1 = methods->Nth(i);
                 if (!strcmp(f1->GetId()->GetIdName(), d->GetId()->GetIdName()))
@@ -405,22 +393,22 @@ void ClassDecl::AssignOffset() {
 }
 
 void ClassDecl::AddPrefixToMethods() {
-    // add prefix to method names.
+
     for (int i = 0; i < members->NumElements(); i++) {
         members->Nth(i)->AddPrefixToMethods();
     }
 }
 
 void ClassDecl::Emit() {
-//    PrintDebug("tac+", "Begin Emitting TAC in ClassDecl.");
+
 
     members->EmitAll();
 
-    // Emit VTable.
+
     List<const char*> *method_labels = new List<const char*>;
     for (int i = 0; i < methods->NumElements(); i++) {
         FunctionDecl* fn = methods->Nth(i);
-//        PrintDebug("tac+", "Insert %s into VTable.", fn->GetId()->GetIdName());
+
         method_labels->Append(fn->GetId()->GetIdName());
     }
     CG->GenVTable(id->GetIdName(), method_labels);
@@ -450,7 +438,7 @@ void InterfaceDecl::Check(checkStep c) {
         case sem_decl:
             semantic_type = new NamedType(id);
             semantic_type->SetSelfType();
-            // fall through.
+
         default:
             id->Check(c);
             scopeHandler->EnterScope();
@@ -488,7 +476,7 @@ void FunctionDecl::BuildSymTable() {
     }
     scopeHandler->BuildScope();
     formals->BuildSymTableAll();
-    if (body) body->BuildSymTable(); // function body must be a StmtBlock.
+    if (body) body->BuildSymTable();
     scopeHandler->ExitScope();
 }
 
@@ -500,7 +488,7 @@ void FunctionDecl::CheckDecl() {
     if (body) body->Check(sem_decl);
     scopeHandler->ExitScope();
 
-    // check the signature of the main function.
+
     if (!strcmp(id->GetIdName(), "main")) {
         if (formals->NumElements() != 0) {
             semantic_error = 1;
@@ -539,7 +527,7 @@ bool FunctionDecl::IsEquivalentTo(Decl *other) {
         return false;
     }
     for (int i = 0; i < formals->NumElements(); i++) {
-        // must be VariableDecls.
+
         Type *var_type1 =
                 (dynamic_cast<VariableDecl*>(formals->Nth(i)))->GetType();
         Type *var_type2 =
@@ -552,8 +540,8 @@ bool FunctionDecl::IsEquivalentTo(Decl *other) {
 }
 
 void FunctionDecl::AddPrefixToMethods() {
-    // add prefix for all functions.
-    // Add prefix to all the function name except the global main.
+
+
     Decl *d = dynamic_cast<Decl*>(this->GetParent());
     if (d && d->IsClassDecl()) {
         id->AddPrefix(".");
@@ -569,7 +557,7 @@ void FunctionDecl::AssignMemberOffset(bool inClass, int offset) {
 }
 
 void FunctionDecl::Emit() {
-//    PrintDebug("tac+", "Begin Emitting TAC in FunctionDecl.");
+
     if (returnType == Type::doubleType) {
         semantic_error = 1;
         return;
@@ -579,15 +567,15 @@ void FunctionDecl::Emit() {
     Decl *d = dynamic_cast<Decl*>(this->GetParent());
     CG->GenLabel(id->GetIdName());
 
-    // BeginFunc will reset the FP offset counter.
+
     BeginFunc *f = CG->GenBeginFunc();
 
-    // Add 4 to the offset of the 1st param for class member.
+
     if (d && d->IsClassDecl()) {
         CG->GetNextParamLoc();
     }
 
-    // Generate all the Locations for formals.
+
     for (int i = 0; i < formals->NumElements(); i++) {
         VariableDecl *v = formals->Nth(i);
         if (v->GetType() == Type::doubleType) {
@@ -602,16 +590,13 @@ void FunctionDecl::Emit() {
 
     if (body) body->Emit();
 
-    // Backpatch the frame size.
+
     f->SetFrameSize(CG->GetFrameSize());
 
     CG->GenEndFunc();
 }
 
-/* File: ast_expr.cc
- * -----------------
- * Implementation of expression node classes.
- */
+
 
 
 
@@ -720,7 +705,7 @@ void ArithmeticExpr::CheckType() {
     if (!strcmp(op->GetOpStr(), "-") && !left) {
         Type *tr = right->GetType();
         if (tr == NULL) {
-            // some error accur in left or right, so skip it.
+
             return;
         }
         if (tr == Type::intType) {
@@ -731,17 +716,17 @@ void ArithmeticExpr::CheckType() {
             semantic_error = 1;
             return;
         }
-    } else { // for + - * / %
+    } else {
         Type *tl = left->GetType();
         Type *tr = right->GetType();
         if (tl == NULL || tr == NULL) {
-            // some error accur in left or right, so skip it.
+
             return;
         }
         if (tl == Type::intType && tr == Type::intType) {
             semantic_type = Type::intType;
         } else if ((tl == Type::doubleType && tr == Type::doubleType)
-            // && strcmp(op->GetOpStr(), "%") // % can apply to float.
+
                 ) {
             semantic_type = Type::doubleType;
         } else {
@@ -774,14 +759,14 @@ void RelationalExpr::CheckType() {
     op->Check(sem_type);
     right->Check(sem_type);
 
-    // the type of RelationalExpr is always boolType.
+
     semantic_type = Type::boolType;
 
     Type *tl = left->GetType();
     Type *tr = right->GetType();
 
     if (tl == NULL || tr == NULL) {
-        // some error accur in left or right, so skip it.
+
         return;
     }
 
@@ -818,11 +803,11 @@ void EqualityExpr::CheckType() {
     Type *tl = left->GetType();
     Type *tr = right->GetType();
 
-    // the type of EqualityExpr is always boolType.
+
     semantic_type = Type::boolType;
 
     if (tl == NULL || tr == NULL) {
-        // some error accur in left or right, so skip it.
+
         return;
     }
 
@@ -856,13 +841,13 @@ void EqualityExpr::Emit() {
         asm_loc = CG->GenBuiltInCall(StringEqual, left->GetEmitLocDeref(),
                                      right->GetEmitLocDeref());
         if (!strcmp(op->GetOpStr(), "!=")) {
-            // for s1 != s2, generate s1 == s2, then generate logical not.
+
             asm_loc = CG->GenBinaryOp("==", CG->GenLoadConstant(0),
                                       asm_loc);
         }
     } else {
-        // array? class? interface?
-        // just compare the reference.
+
+
         asm_loc = CG->GenBinaryOp(op->GetOpStr(), left->GetEmitLocDeref(),
                                   right->GetEmitLocDeref());
     }
@@ -873,24 +858,24 @@ void LogicalExpr::CheckType() {
     op->Check(sem_type);
     right->Check(sem_type);
 
-    // the type of LogicalExpr is always boolType.
+
     semantic_type = Type::boolType;
 
     if (!strcmp(op->GetOpStr(), "!")) {
         Type *tr = right->GetType();
         if (tr == NULL) {
-            // some error accur in left or right, so skip it.
+
             return;
         }
         if (tr != Type::boolType) {
             semantic_error = 1;
             return;
         }
-    } else { // for && and ||
+    } else {
         Type *tl = left->GetType();
         Type *tr = right->GetType();
         if (tl == NULL || tr == NULL) {
-            // some error accur in left or right, so skip it.
+
             return;
         }
         if (tl != Type::boolType || tr != Type::boolType) {
@@ -918,7 +903,7 @@ void LogicalExpr::Emit() {
         asm_loc = CG->GenBinaryOp(op->GetOpStr(), left->GetEmitLocDeref(),
                                   right->GetEmitLocDeref());
     } else {
-        // use 0 == bool_var to compute !bool_var.
+
         asm_loc = CG->GenBinaryOp("==", CG->GenLoadConstant(0),
                                   right->GetEmitLocDeref());
     }
@@ -933,7 +918,7 @@ void AssignExpr::CheckType() {
     Type *tr = right->GetType();
 
     if (tl == NULL || tr == NULL) {
-        // some error accur in left or right, so skip it.
+
         return;
     }
 
@@ -959,7 +944,7 @@ void AssignExpr::Emit() {
     Location *r = right->GetEmitLocDeref();
     Location *l = left->GetEmitLoc();
     if (r && l) {
-        // base can be this or class instances.
+
         if (l->GetBase() != NULL) {
             CG->GenStore(l->GetBase(), r, l->GetOffset());
         } else if (left->IsArrayAccessRef()) {
@@ -977,7 +962,7 @@ void This::CheckType() {
         semantic_error = 1;
         return;
     } else {
-        // Note: here create a new NamedType for 'this'.
+
         semantic_type = new NamedType(d->GetId());
         semantic_type->SetSelfType();
     }
@@ -1005,7 +990,7 @@ void ArrayAccess::CheckType() {
     subscript->Check(sem_type);
     t = subscript->GetType();
     if (t == NULL) {
-        // some error accur in subscript, so skip it.
+
     } else if (t != Type::intType) {
         semantic_error = 1;
         return;
@@ -1014,7 +999,7 @@ void ArrayAccess::CheckType() {
     base->Check(sem_type);
     t = base->GetType();
     if (t == NULL) {
-        // some error accur in base, so skip it.
+
         err++;
     } else if (!t->IsArrayType()) {
         semantic_error = 1;
@@ -1023,7 +1008,7 @@ void ArrayAccess::CheckType() {
     }
 
     if (!err) {
-        // the error of subscript will not affect the type of array access.
+
         semantic_type = (dynamic_cast<ArrayType*>(t))->GetElemType();
     }
 }
@@ -1086,7 +1071,7 @@ void FieldAccess::CheckDecl() {
             field->SetDecl(d);
         }
     } else {
-        // if has base, then leave the work to CheckType.
+
         base->Check(sem_decl);
     }
 }
@@ -1104,7 +1089,7 @@ void FieldAccess::CheckType() {
         return;
     }
 
-    // must check the base expr's class type, and find in that class.
+
     base->Check(sem_type);
     Type *base_t = base->GetType();
     if (base_t != NULL) {
@@ -1120,23 +1105,23 @@ void FieldAccess::CheckType() {
         if (d == NULL || !d->IsVariableDecl()) {
             semantic_error = 1;
             return;
-        } else {//amir here we check the accessibility of the field. to include public private protected, change here
-            // If base is 'this' or any instances of current class,
-            // then all the private variable members are accessible.
-            // Otherwise the variable members are not accessible.
-            // Note: If base is a subclass of current class, and the
-            // field is belong to current class, then this field is
-            // accessible.
+        } else {
+
+
+
+
+
+
             Decl *cur_class = scopeHandler->LookupThis();
             if (!cur_class || !cur_class->IsClassDecl()) {
-                // not in a class scope, all the variable members are
-                // not accessible.
+
+
                 semantic_error = 1;
                 return;
                 return;
             }
-            // in a class scope, the variable members can be
-            // accessed by 'this' or the compatible class instance.
+
+
             Type *cur_t = cur_class->GetType();
             d = scopeHandler->LookupField(
                     dynamic_cast<NamedType*>(cur_t)->GetId(), field);
@@ -1165,7 +1150,7 @@ void FieldAccess::Check(checkStep c) {
         case sem_type:
             this->CheckType(); break;
         default:;
-            // do not check anything.
+
     }
 }
 
@@ -1174,7 +1159,7 @@ void FieldAccess::Emit() {
     field->Emit();
     asm_loc = field->GetEmitLocDeref();
 
-    // can access a var member in a class scope, so set the base.
+
     if (base)
         asm_loc = new Location(fpRelative, asm_loc->GetOffset(),
                                asm_loc->GetName(), base->GetEmitLocDeref());
@@ -1183,7 +1168,7 @@ void FieldAccess::Emit() {
 Location * FieldAccess::GetEmitLocDeref() {
     Location *t = asm_loc;
     if (t->GetBase() != NULL) {
-        // this or some class instances.
+
         t = CG->GenLoad(t->GetBase(), t->GetOffset());
     }
     return t;
@@ -1206,11 +1191,11 @@ void Call::CheckDecl() {
             return;
         } else {
             field->SetDecl(d);
-            // if function is defined after this, here semantic_type is NULL.
+
             semantic_type = d->GetType();
         }
     } else {
-        // if has base, then leave the work to CheckType.
+
         base->Check(sem_decl);
     }
     actuals->CheckAll(sem_decl);
@@ -1219,17 +1204,17 @@ void Call::CheckDecl() {
 void Call::CheckType() {
     if (!base) {
         if (field->GetDecl() && !semantic_type) {
-            // if function is defined after this, then assign semantic_type again.
+
             semantic_type = field->GetDecl()->GetType();
         }
     } else {
-        // must check the base expr's class type, and find in that class.
+
         base->Check(sem_type);
         Type * t = base->GetType();
-        if (t != NULL) { // base defined.
+        if (t != NULL) {
             if (t->IsArrayType() && !strcmp(field->GetIdName(), "length")) {
-                // support the length() method of array type.
-                // length must have no argument.
+
+
                 int n = actuals->NumElements();
                 if (n) {
                     semantic_error = 1;
@@ -1258,7 +1243,7 @@ void Call::CheckType() {
 
 void Call::CheckFuncArgs() {
     Decl *f = field->GetDecl();
-    if (!f || !f->IsFunctionDecl()) return; // skip the error decl
+    if (!f || !f->IsFunctionDecl()) return;
     FunctionDecl *fun = dynamic_cast<FunctionDecl*>(f);
     List<VariableDecl*> *formals = fun->GetFormals();
 
@@ -1287,19 +1272,19 @@ void Call::Check(checkStep c) {
         case sem_type:
             this->CheckType(); break;
         default:;
-            // do not check anything.
+
     }
 }
 
 void Call::Emit() {
-//    PrintDebug("tac+", "Emit Call %s.", field->GetIdName());
-    // TODO: in class scope, methon without base should be ACall.
+
+
 
     if (base) base->Emit();
     field->Emit();
     actuals->EmitAll();
 
-    // deal with array.length().
+
     if (base && base->GetType()->IsArrayType() &&
         !strcmp(field->GetIdName(), "length")) {
         Location *t0 = base->GetEmitLocDeref();
@@ -1312,12 +1297,12 @@ void Call::Emit() {
 
     bool is_ACall = (base != NULL) || (fn->IsClassMember());
 
-    // get VTable entry.
+
     Location *this_loc;
     if (base) {
-        this_loc = base->GetEmitLocDeref(); // VTable entry.
+        this_loc = base->GetEmitLocDeref();
     } else if (fn->IsClassMember()) {
-        this_loc = CG->ThisPtr; // in a class scope.
+        this_loc = CG->ThisPtr;
     }
 
     Location *t;
@@ -1326,26 +1311,26 @@ void Call::Emit() {
         t = CG->GenLoad(t, fn->GetVTableOffset());
     }
 
-    // PushParam
+
     for (int i = actuals->NumElements() - 1; i >= 0; i--) {
         Location *l = actuals->Nth(i)->GetEmitLocDeref();
         CG->GenPushParam(l);
     }
 
-    // generate call.
+
     if (is_ACall) {
-        // Push this.
+
         CG->GenPushParam(this_loc);
-        // ACall
+
         asm_loc = CG->GenACall(t, fn->HasReturnValue());
-        // PopParams
+
         CG->GenPopParams(actuals->NumElements() * 4 + 4);
     } else {
-        // LCall
-        field->AddPrefix("_"); // main?
+
+        field->AddPrefix("_");
         asm_loc = CG->GenLCall(field->GetIdName(),
                                semantic_type != Type::voidType);
-        // PopParams
+
         CG->GenPopParams(actuals->NumElements() * 4);
     }
 }
@@ -1361,8 +1346,8 @@ void NewExpr::CheckDecl() {
 
 void NewExpr::CheckType() {
     cType->Check(sem_type);
-    // cType is NamedType.
-    if (cType->GetType()) { // correct cType
+
+    if (cType->GetType()) {
         semantic_type = cType;
     }
 }
@@ -1400,7 +1385,7 @@ void NewArrayExpr::CheckType() {
     size->Check(sem_type);
     t = size->GetType();
     if (t == NULL) {
-        // some error accur in size, so skip it.
+
     } else if (t != Type::intType) {
         semantic_error = 1;
         return;
@@ -1408,10 +1393,10 @@ void NewArrayExpr::CheckType() {
 
     elemType->Check(sem_type);
     if (!elemType->GetType()) {
-        // skip the error elemType.
+
         return;
     } else {
-        // the error size will not affect the type of new array.
+
         semantic_type = new ArrayType(*location, elemType);
         semantic_type->Check(sem_decl);
     }
@@ -1481,7 +1466,7 @@ void PostfixExpr::CheckType() {
     op->Check(sem_type);
     Type *t = lvalue->GetType();
     if (t == NULL) {
-        // some error accur in lvalue, so skip it.
+
     } else if (t != Type::intType) {
         semantic_error = 1;
         return;
@@ -1501,19 +1486,19 @@ void PostfixExpr::Check(checkStep c) {
 
 void PostfixExpr::Emit() {
     lvalue->Emit();
-    // lvalue can be class var member, array access, or any variables.
+
     Location *l1 = lvalue->GetEmitLoc();
     Location *l2 = lvalue->GetEmitLocDeref();
 
-    // save the original lvalue.
+
     Location *t0 = CG->GenTempVar();
     CG->GenAssign(t0, l2);
 
-    // postfix expr should emit ++ or -- at the end of itself.
+
     l2 = CG->GenBinaryOp(strcmp(op->GetOpStr(), "++") ? "-" : "+",
                          l2, CG->GenLoadConstant(1));
 
-    // change the value of lvalue.
+
     if (l1->GetBase() != NULL) {
         CG->GenStore(l1->GetBase(), l2, l1->GetOffset());
     } else if (lvalue->IsArrayAccessRef()) {
@@ -1522,14 +1507,11 @@ void PostfixExpr::Emit() {
         CG->GenAssign(l1, l2);
     }
 
-    // the value of postfix expr is its original lvalue.
+
     asm_loc = t0;
 }
 
-/* File: ast_stmt.cc
- * -----------------
- * Implementation of statement node classes.
- */
+
 
 
 
@@ -1541,46 +1523,30 @@ Program::Program(List<Decl*> *d) {
 void Program::BuildSymTable() {
     scopeHandler = new SymbolTable();
 
-    /* Pass 1: Traverse the AST and build the symbol table. Report the
-     * errors of declaration conflict in any local scopes. */
+
     decls->BuildSymTableAll();
 }
 
 void Program::Check() {
-    /* pp3: here is where the semantic analyzer is kicked off.
-     *      The general idea is perform a tree traversal of the
-     *      entire program, examining all constructs for compliance
-     *      with the semantic rules.  Each node can have its own way of
-     *      checking itself, which makes for a great use of inheritance
-     *      and polymorphism in the node classes.
-     */
 
-    /* Pass 2: Traverse the AST and report any errors of undeclared
-     * identifiers except the field access and function calls. */
+
+
     scopeHandler->ResetSymbolTable();
     decls->CheckAll(sem_decl);
 
-    /* Pass 3: Traverse the AST and report errors related to the class and
-     * interface inheritance. */
+
     scopeHandler->ResetSymbolTable();
     decls->CheckAll(sem_inh);
 
-    /* Pass 4: Traverse the AST and report errors related to types, function
-     * calls and field access. Actually, check all the remaining errors. */
+
     scopeHandler->ResetSymbolTable();
     decls->CheckAll(sem_type);
 }
 
 void Program::Emit() {
-    /* pp5: here is where the code generation is kicked off.
-     *      The general idea is perform a tree traversal of the
-     *      entire program, generating instructions as you go.
-     *      Each node can have its own way of translating itself,
-     *      which makes for a great use of inheritance and
-     *      polymorphism in the node classes.
-     */
 
-    // Check if there exists a global main function.
+
+
     bool has_main = false;
     for (int i = 0; i < decls->NumElements(); i++) {
         Decl *d = decls->Nth(i);
@@ -1597,25 +1563,25 @@ void Program::Emit() {
         return;
     }
 
-//    PrintDebug("tac+", "Assign offset for class/interface members & global.");
-    // Assign offset for global var, class/interface members.
+
+
     for (int i = 0; i < decls->NumElements(); i++) {
         decls->Nth(i)->AssignOffset();
     }
-    // Add prefix for functions.
+
     for (int i = 0; i < decls->NumElements(); i++) {
         decls->Nth(i)->AddPrefixToMethods();
     }
-//    if (IsDebugOn("tac+")) { this->Print(0); }
 
-//    PrintDebug("tac+", "Begin Emitting TAC for Program.");
+
+
     decls->EmitAll();
-//    if (IsDebugOn("tac+")) { this->Print(0); }
+
 
     if(semantic_error != 0)
         return;
 
-    // Emit the TAC or final MIPS assembly code.
+
     CG->DoFinalCodeGen();
 }
 
@@ -1759,7 +1725,7 @@ void WhileStmt::Emit() {
 }
 
 IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) {
-    // else can be NULL
+
     elseBody = eb;
     if (elseBody) elseBody->SetParent(this);
 }
@@ -1838,17 +1804,17 @@ void BreakStmt::Check(checkStep c) {
 }
 
 void BreakStmt::Emit() {
-    // break can jump out of a while, for, or a switch.
+
     Node *n = this;
     while (n->GetParent()) {
         if (n->IsLoopStmt()) {
             const char *l = dynamic_cast<LoopStmt*>(n)->GetEndLoopLabel();
-//            PrintDebug("tac+", "endloop label %s.", l);
+
             CG->GenGoto(l);
             return;
         } else if (n->IsSwitchStmt()) {
             const char *l = dynamic_cast<SwitchStmt*>(n)->GetEndSwitchLabel();
-//            PrintDebug("tac+", "endswitch label %s.", l);
+
             CG->GenGoto(l);
             return;
         }
@@ -1913,41 +1879,41 @@ void SwitchStmt::Check(checkStep c) {
 void SwitchStmt::Emit() {
     expr->Emit();
 
-    // the end_switch_label is used by break.
+
     end_switch_label = CG->NewLabel();
 
     Location *switch_value = expr->GetEmitLocDeref();
 
-    // here use a series of if instead of an address table.
-    // case statement is optional, default statement is optional.
-    // default statement is always at the end of the cases list.
+
+
+
     for (int i = 0; i < cases->NumElements(); i++) {
         CaseStmt *c = cases->Nth(i);
 
-        // get case label.
+
         c->GenCaseLabel();
         const char *cl = c->GetCaseLabel();
 
-        // get case value.
+
         IntLiteral *cv = c->GetCaseValue();
 
-        // gen branches.
+
         if (cv) {
-            // case
+
             cv->Emit();
             Location *cvl = cv->GetEmitLocDeref();
             Location *t = CG->GenBinaryOp("!=", switch_value, cvl);
             CG->GenIfZ(t, cl);
         } else {
-            // default
+
             CG->GenGoto(cl);
         }
     }
 
-    // emit case statements.
+
     cases->EmitAll();
 
-    // gen end_switch_label.
+
     CG->GenLabel(end_switch_label);
 }
 
@@ -1962,7 +1928,7 @@ void ReturnStmt::Check(checkStep c) {
     expr->Check(c);
     if (c == sem_type) {
         Node *n = this;
-        // find the FunctionDecl.
+
         while (n->GetParent()) {
             if (dynamic_cast<FunctionDecl*>(n) != NULL) break;
             n = n->GetParent();
@@ -2011,7 +1977,7 @@ void PrintStmt::Check(checkStep c) {
 void PrintStmt::Emit() {
     for (int i = 0; i < args->NumElements(); i++) {
         args->Nth(i)->Emit();
-        // BuiltInCall
+
         Type *t = args->Nth(i)->GetType();
         BuiltIn f;
         if (t == Type::intType) {
@@ -2033,20 +1999,11 @@ void PrintStmt::Emit() {
     CG->GenBuiltInCall(f, l);
 }
 
-/* File: ast_type.cc
- * -----------------
- * Implementation of type node classes.
- */
 
 
 
-/* Class constants
- * ---------------
- * These are public constants for the built-in base types (int, double, etc.)
- * They can be accessed with the syntax Type::intType. This allows you to
- * directly access them and share the built-in types where needed rather that
- * creates lots of copies.
- */
+
+
 
 Type *Type::intType    = new Type("int");
 Type *Type::doubleType = new Type("double");
@@ -2119,11 +2076,7 @@ bool NamedType::IsEquivalentTo(Type *other) {
     return (id->IsEquivalentTo(nt->GetId()));
 }
 
-/* NamedType A IsCompatibleWith NamedType B,
- * means that A = B,
- * or class B is the subclass of class A,
- * or class B or its parents implement interface A.
- */
+
 bool NamedType::IsCompatibleWith(Type *other) {
 
 
@@ -2142,7 +2095,7 @@ bool NamedType::IsCompatibleWith(Type *other) {
             return false;
         }
         ClassDecl *cdecl2 = dynamic_cast<ClassDecl*>(decl2);
-        // subclass can compatible with its parent class and interface.
+
         return cdecl2->IsChildOf(decl1);
     }
 }

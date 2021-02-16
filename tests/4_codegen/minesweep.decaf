@@ -1,14 +1,9 @@
-/* Decaf Minesweeper
- * Written by Warren Shen
- * 3/16/01
- */
 
 
-int probOfMine; // probability of planting a mine in a given square
 
-/* This random module is copied
- * from the Blackjack program.  The rest is mine.
- */
+int probOfMine;
+
+
 class rndModule {
 
   int seed;

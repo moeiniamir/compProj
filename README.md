@@ -80,23 +80,23 @@ The compiler traverses source code and AST for multiple passes to perform lexica
 
 ## References
 * The Decaf Language
-  > https://parasol.tamu.edu/courses/decaf/students/decafOverview.pdf
+  > https:
 * CPTR 415 Compiler Construction - The Decaf Programming Language
-  > http://computing.southern.edu/halterman/Courses/Spring2008/415/Assignments/decaf.html
+  > http:
 * Abstract Syntax Tree (AST)
-  > https://en.wikipedia.org/wiki/Abstract_syntax_tree
+  > https:
 * Intermediate representation
-  > https://en.wikipedia.org/wiki/Intermediate_representation
+  > https:
 * Three-Address Code (TAC)
-  > https://en.wikipedia.org/wiki/Three-address_code
+  > https:
 * Flex
-  > https://en.wikipedia.org/wiki/Flex_(lexical_analyser_generator)
+  > https:
 * Bison
-  > https://en.wikipedia.org/wiki/GNU_bison
+  > https:
 * MIPS architecture
-  > https://en.wikipedia.org/wiki/MIPS_architecture
+  > https:
 * SPIM simulator - A MIPS processor similator
-  > https://en.wikipedia.org/wiki/SPIM
+  > https:
 * The MIPS Info Sheet
-  > http://www.cs.tufts.edu/comp/140/lectures/Day_3/mips_summary.pdf
+  > http:
 

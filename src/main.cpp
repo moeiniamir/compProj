@@ -1,8 +1,4 @@
-/* File: main.cc
- * -------------
- * This file defines the main() routine for the program and not much else.
- * You should not need to modify this file.
- */
+
 
 #include <string.h>
 #include <stdio.h>
@@ -10,21 +6,14 @@
 #include "parser.h"
 
 
-/* Function: main()
- * ----------------
- * Entry point to the entire program.  We parse the command line and turn
- * on any debugging flags requested by the user when invoking the program.
- * initializeFlex() is used to set up the scanner.
- * InitParser() is used to set up the parser. The call to yyparse() will
- * attempt to parse a complete program from the input.
- */
+
 int main(int argc, char *argv[]) {
-//    ParseCommandLine(argc, argv);
+
 
     initializeFlex();
-//    InitParser();
+
     yyparse();
-//    return (syntax_error + semantic_error == 0 ? 0 : -1);
+
     return 0;
 }
 
