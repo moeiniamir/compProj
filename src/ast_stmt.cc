@@ -42,21 +42,21 @@ void Program::Check() {
     /* Pass 2: Traverse the AST and report any errors of undeclared
      * identifiers except the field access and function calls. */
     symtab->ResetSymbolTable();
-    decls->CheckAll(E_CheckDecl);
+    decls->CheckAll(sem_decl);
     PrintDebug("ast+", "CheckDecl finished.");
     if (IsDebugOn("ast+")) { this->Print(0); }
 
     /* Pass 3: Traverse the AST and report errors related to the class and
      * interface inheritance. */
     symtab->ResetSymbolTable();
-    decls->CheckAll(E_CheckInherit);
+    decls->CheckAll(sem_inh);
     PrintDebug("ast+", "CheckInherit finished.");
     if (IsDebugOn("ast+")) { this->Print(0); }
 
     /* Pass 4: Traverse the AST and report errors related to types, function
      * calls and field access. Actually, check all the remaining errors. */
     symtab->ResetSymbolTable();
-    decls->CheckAll(E_CheckType);
+    decls->CheckAll(sem_type);
     PrintDebug("ast+", "CheckType finished.");
     if (IsDebugOn("ast+")) { this->Print(0); }
 }
@@ -127,7 +127,7 @@ void StmtBlock::BuildSymTable() {
     symtab->ExitScope();
 }
 
-void StmtBlock::Check(checkT c) {
+void StmtBlock::Check(checkStep c) {
     symtab->EnterScope();
     decls->CheckAll(c);
     stmts->CheckAll(c);
@@ -165,21 +165,21 @@ void ForStmt::BuildSymTable() {
 }
 
 void ForStmt::CheckType() {
-    init->Check(E_CheckType);
-    test->Check(E_CheckType);
+    init->Check(sem_type);
+    test->Check(sem_type);
     if (test->GetType() && test->GetType() != Type::boolType) {
         semantic_error = 1;
         return;
     }
-    step->Check(E_CheckType);
+    step->Check(sem_type);
     symtab->EnterScope();
-    body->Check(E_CheckType);
+    body->Check(sem_type);
     symtab->ExitScope();
 }
 
-void ForStmt::Check(checkT c) {
+void ForStmt::Check(checkStep c) {
     switch (c) {
-        case E_CheckType:
+        case sem_type:
             this->CheckType(); break;
         default:
             init->Check(c);
@@ -221,19 +221,19 @@ void WhileStmt::BuildSymTable() {
 }
 
 void WhileStmt::CheckType() {
-    test->Check(E_CheckType);
+    test->Check(sem_type);
     if (test->GetType() && test->GetType() != Type::boolType) {
         semantic_error = 1;
         return;
     }
     symtab->EnterScope();
-    body->Check(E_CheckType);
+    body->Check(sem_type);
     symtab->ExitScope();
 }
 
-void WhileStmt::Check(checkT c) {
+void WhileStmt::Check(checkStep c) {
     switch (c) {
-        case E_CheckType:
+        case sem_type:
             this->CheckType(); break;
         default:
             test->Check(c);
@@ -283,24 +283,24 @@ void IfStmt::BuildSymTable() {
 }
 
 void IfStmt::CheckType() {
-    test->Check(E_CheckType);
+    test->Check(sem_type);
     if (test->GetType() && test->GetType() != Type::boolType) {
         semantic_error = 1;
         return;
     }
     symtab->EnterScope();
-    body->Check(E_CheckType);
+    body->Check(sem_type);
     symtab->ExitScope();
     if (elseBody) {
         symtab->EnterScope();
-        elseBody->Check(E_CheckType);
+        elseBody->Check(sem_type);
         symtab->ExitScope();
     }
 }
 
-void IfStmt::Check(checkT c) {
+void IfStmt::Check(checkStep c) {
     switch (c) {
-        case E_CheckType:
+        case sem_type:
             this->CheckType(); break;
         default:
             test->Check(c);
@@ -330,8 +330,8 @@ void IfStmt::Emit() {
     CG->GenLabel(l1);
 }
 
-void BreakStmt::Check(checkT c) {
-    if (c == E_CheckType) {
+void BreakStmt::Check(checkStep c) {
+    if (c == sem_type) {
         Node *n = this;
         while (n->GetParent()) {
             if (n->IsLoopStmt() || n->IsCaseStmt()) return;
@@ -380,7 +380,7 @@ void CaseStmt::BuildSymTable() {
     symtab->ExitScope();
 }
 
-void CaseStmt::Check(checkT c) {
+void CaseStmt::Check(checkStep c) {
     if (value) value->Check(c);
     symtab->EnterScope();
     stmts->CheckAll(c);
@@ -414,7 +414,7 @@ void SwitchStmt::BuildSymTable() {
     symtab->ExitScope();
 }
 
-void SwitchStmt::Check(checkT c) {
+void SwitchStmt::Check(checkStep c) {
     expr->Check(c);
     symtab->EnterScope();
     cases->CheckAll(c);
@@ -471,9 +471,9 @@ void ReturnStmt::PrintChildren(int indentLevel) {
     expr->Print(indentLevel+1);
 }
 
-void ReturnStmt::Check(checkT c) {
+void ReturnStmt::Check(checkStep c) {
     expr->Check(c);
-    if (c == E_CheckType) {
+    if (c == sem_type) {
         Node *n = this;
         // find the FunctionDecl.
         while (n->GetParent()) {
@@ -509,9 +509,9 @@ void PrintStmt::PrintChildren(int indentLevel) {
     args->PrintAll(indentLevel+1, "(args) ");
 }
 
-void PrintStmt::Check(checkT c) {
+void PrintStmt::Check(checkStep c) {
     args->CheckAll(c);
-    if (c == E_CheckType) {
+    if (c == sem_type) {
         for (int i = 0; i < args->NumElements(); i++) {
             Type *t = args->Nth(i)->GetType();
             if (t != NULL && t != Type::stringType && t != Type::intType

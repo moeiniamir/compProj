@@ -61,8 +61,8 @@ void Identifier::CheckDecl() {
     }
 }
 
-void Identifier::Check(checkT c) {
-    if (c == E_CheckDecl) {
+void Identifier::Check(checkStep c) {
+    if (c == sem_decl) {
         this->CheckDecl();
     }
 }

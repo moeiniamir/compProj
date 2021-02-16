@@ -47,7 +47,7 @@ class EmptyExpr : public Expr
   public:
     const char *GetPrintNameForNode() { return "Empty"; }
     void PrintChildren(int indentLevel);
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     bool IsEmptyExpr() { return true; }
@@ -63,7 +63,7 @@ class IntLiteral : public Expr
     const char *GetPrintNameForNode() { return "IntLiteral"; }
     void PrintChildren(int indentLevel);
 
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -79,7 +79,7 @@ class DoubleLiteral : public Expr
     const char *GetPrintNameForNode() { return "DoubleLiteral"; }
     void PrintChildren(int indentLevel);
 
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -95,7 +95,7 @@ class BoolLiteral : public Expr
     const char *GetPrintNameForNode() { return "BoolLiteral"; }
     void PrintChildren(int indentLevel);
 
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -111,7 +111,7 @@ class StringLiteral : public Expr
     const char *GetPrintNameForNode() { return "StringLiteral"; }
     void PrintChildren(int indentLevel);
 
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -123,7 +123,7 @@ class NullLiteral: public Expr
     NullLiteral(yyltype loc) : Expr(loc) {}
     const char *GetPrintNameForNode() { return "NullLiteral"; }
     void PrintChildren(int indentLevel);
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -166,7 +166,7 @@ class ArithmeticExpr : public CompoundExpr
     ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     ArithmeticExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
     const char *GetPrintNameForNode() { return "ArithmeticExpr"; }
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -180,7 +180,7 @@ class RelationalExpr : public CompoundExpr
   public:
     RelationalExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     const char *GetPrintNameForNode() { return "RelationalExpr"; }
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -194,7 +194,7 @@ class EqualityExpr : public CompoundExpr
   public:
     EqualityExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     const char *GetPrintNameForNode() { return "EqualityExpr"; }
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -209,7 +209,7 @@ class LogicalExpr : public CompoundExpr
     LogicalExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     LogicalExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
     const char *GetPrintNameForNode() { return "LogicalExpr"; }
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -223,7 +223,7 @@ class AssignExpr : public CompoundExpr
   public:
     AssignExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     const char *GetPrintNameForNode() { return "AssignExpr"; }
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -244,7 +244,7 @@ class This : public Expr
     This(yyltype loc) : Expr(loc) {}
     const char *GetPrintNameForNode() { return "This"; }
     void PrintChildren(int indentLevel);
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -261,7 +261,7 @@ class ArrayAccess : public LValue
     const char *GetPrintNameForNode() { return "ArrayAccess"; }
     void PrintChildren(int indentLevel);
 
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -287,7 +287,7 @@ class FieldAccess : public LValue
     const char *GetPrintNameForNode() { return "FieldAccess"; }
     void PrintChildren(int indentLevel);
 
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -313,7 +313,7 @@ class Call : public Expr
     const char *GetPrintNameForNode() { return "Call"; }
     void PrintChildren(int indentLevel);
 
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -331,7 +331,7 @@ class NewExpr : public Expr
     const char *GetPrintNameForNode() { return "NewExpr"; }
     void PrintChildren(int indentLevel);
 
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -349,7 +349,7 @@ class NewArrayExpr : public Expr
     const char *GetPrintNameForNode() { return "NewArrayExpr"; }
     void PrintChildren(int indentLevel);
 
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -360,7 +360,7 @@ class ReadIntegerExpr : public Expr
   public:
     ReadIntegerExpr(yyltype loc) : Expr(loc) {}
     const char *GetPrintNameForNode() { return "ReadIntegerExpr"; }
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -371,7 +371,7 @@ class ReadLineExpr : public Expr
   public:
     ReadLineExpr(yyltype loc) : Expr (loc) {}
     const char *GetPrintNameForNode() { return "ReadLineExpr"; }
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -390,7 +390,7 @@ class PostfixExpr : public Expr
     const char *GetPrintNameForNode() { return "PostfixExpr"; }
     void PrintChildren(int indentLevel);
 
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();

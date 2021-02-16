@@ -14,8 +14,8 @@ void EmptyExpr::PrintChildren(int indentLevel) {
     if (asm_loc) asm_loc->Print();
 }
 
-void EmptyExpr::Check(checkT c) {
-    if (c == E_CheckType) {
+void EmptyExpr::Check(checkStep c) {
+    if (c == sem_type) {
         semantic_type = Type::voidType;
     }
 }
@@ -29,8 +29,8 @@ void IntLiteral::PrintChildren(int indentLevel) {
     if (asm_loc) asm_loc->Print();
 }
 
-void IntLiteral::Check(checkT c) {
-    if (c == E_CheckDecl) {
+void IntLiteral::Check(checkStep c) {
+    if (c == sem_decl) {
         semantic_type = Type::intType;
     }
 }
@@ -48,8 +48,8 @@ void DoubleLiteral::PrintChildren(int indentLevel) {
     if (asm_loc) asm_loc->Print();
 }
 
-void DoubleLiteral::Check(checkT c) {
-    if (c == E_CheckDecl) {
+void DoubleLiteral::Check(checkStep c) {
+    if (c == sem_decl) {
         semantic_type = Type::doubleType;
     }
 }
@@ -69,8 +69,8 @@ void BoolLiteral::PrintChildren(int indentLevel) {
     if (asm_loc) asm_loc->Print();
 }
 
-void BoolLiteral::Check(checkT c) {
-    if (c == E_CheckDecl) {
+void BoolLiteral::Check(checkStep c) {
+    if (c == sem_decl) {
         semantic_type = Type::boolType;
     }
 }
@@ -89,8 +89,8 @@ void StringLiteral::PrintChildren(int indentLevel) {
     if (asm_loc) asm_loc->Print();
 }
 
-void StringLiteral::Check(checkT c) {
-    if (c == E_CheckDecl) {
+void StringLiteral::Check(checkStep c) {
+    if (c == sem_decl) {
         semantic_type = Type::stringType;
     }
 }
@@ -104,8 +104,8 @@ void NullLiteral::PrintChildren(int indentLevel) {
     if (asm_loc) asm_loc->Print();
 }
 
-void NullLiteral::Check(checkT c) {
-    if (c == E_CheckDecl) {
+void NullLiteral::Check(checkStep c) {
+    if (c == sem_decl) {
         semantic_type = Type::nullType;
     }
 }
@@ -148,9 +148,9 @@ void CompoundExpr::PrintChildren(int indentLevel) {
 }
 
 void ArithmeticExpr::CheckType() {
-    if (left) left->Check(E_CheckType);
-    op->Check(E_CheckType);
-    right->Check(E_CheckType);
+    if (left) left->Check(sem_type);
+    op->Check(sem_type);
+    right->Check(sem_type);
 
     if (!strcmp(op->GetOpStr(), "-") && !left) {
         Type *tr = right->GetType();
@@ -186,8 +186,8 @@ void ArithmeticExpr::CheckType() {
     }
 }
 
-void ArithmeticExpr::Check(checkT c) {
-    if (c == E_CheckType) {
+void ArithmeticExpr::Check(checkStep c) {
+    if (c == sem_type) {
         this->CheckType();
     } else {
         if (left) left->Check(c);
@@ -205,9 +205,9 @@ void ArithmeticExpr::Emit() {
 }
 
 void RelationalExpr::CheckType() {
-    left->Check(E_CheckType);
-    op->Check(E_CheckType);
-    right->Check(E_CheckType);
+    left->Check(sem_type);
+    op->Check(sem_type);
+    right->Check(sem_type);
 
     // the type of RelationalExpr is always boolType.
     semantic_type = Type::boolType;
@@ -227,8 +227,8 @@ void RelationalExpr::CheckType() {
     }
 }
 
-void RelationalExpr::Check(checkT c) {
-    if (c == E_CheckType) {
+void RelationalExpr::Check(checkStep c) {
+    if (c == sem_type) {
         this->CheckType();
     } else {
         if (left) left->Check(c);
@@ -246,9 +246,9 @@ void RelationalExpr::Emit() {
 }
 
 void EqualityExpr::CheckType() {
-    left->Check(E_CheckType);
-    op->Check(E_CheckType);
-    right->Check(E_CheckType);
+    left->Check(sem_type);
+    op->Check(sem_type);
+    right->Check(sem_type);
 
     Type *tl = left->GetType();
     Type *tr = right->GetType();
@@ -267,8 +267,8 @@ void EqualityExpr::CheckType() {
     }
 }
 
-void EqualityExpr::Check(checkT c) {
-    if (c == E_CheckType) {
+void EqualityExpr::Check(checkStep c) {
+    if (c == sem_type) {
         this->CheckType();
     } else {
         if (left) left->Check(c);
@@ -304,9 +304,9 @@ void EqualityExpr::Emit() {
 }
 
 void LogicalExpr::CheckType() {
-    if (left) left->Check(E_CheckType);
-    op->Check(E_CheckType);
-    right->Check(E_CheckType);
+    if (left) left->Check(sem_type);
+    op->Check(sem_type);
+    right->Check(sem_type);
 
     // the type of LogicalExpr is always boolType.
     semantic_type = Type::boolType;
@@ -335,8 +335,8 @@ void LogicalExpr::CheckType() {
     }
 }
 
-void LogicalExpr::Check(checkT c) {
-    if (c == E_CheckType) {
+void LogicalExpr::Check(checkStep c) {
+    if (c == sem_type) {
         this->CheckType();
     } else {
         if (left) left->Check(c);
@@ -360,9 +360,9 @@ void LogicalExpr::Emit() {
 }
 
 void AssignExpr::CheckType() {
-    left->Check(E_CheckType);
-    op->Check(E_CheckType);
-    right->Check(E_CheckType);
+    left->Check(sem_type);
+    op->Check(sem_type);
+    right->Check(sem_type);
 
     Type *tl = left->GetType();
     Type *tr = right->GetType();
@@ -378,8 +378,8 @@ void AssignExpr::CheckType() {
     }
 }
 
-void AssignExpr::Check(checkT c) {
-    if (c == E_CheckType) {
+void AssignExpr::Check(checkStep c) {
+    if (c == sem_type) {
         this->CheckType();
     } else {
         left->Check(c);
@@ -422,8 +422,8 @@ void This::CheckType() {
     }
 }
 
-void This::Check(checkT c) {
-    if (c == E_CheckType) {
+void This::Check(checkStep c) {
+    if (c == sem_type) {
         this->CheckType();
     }
 }
@@ -448,7 +448,7 @@ void ArrayAccess::CheckType() {
     Type *t;
     int err = 0;
 
-    subscript->Check(E_CheckType);
+    subscript->Check(sem_type);
     t = subscript->GetType();
     if (t == NULL) {
         // some error accur in subscript, so skip it.
@@ -457,7 +457,7 @@ void ArrayAccess::CheckType() {
     return;
     }
 
-    base->Check(E_CheckType);
+    base->Check(sem_type);
     t = base->GetType();
     if (t == NULL) {
         // some error accur in base, so skip it.
@@ -474,8 +474,8 @@ void ArrayAccess::CheckType() {
     }
 }
 
-void ArrayAccess::Check(checkT c) {
-    if (c == E_CheckType) {
+void ArrayAccess::Check(checkStep c) {
+    if (c == sem_type) {
         this->CheckType();
     } else {
         base->Check(c);
@@ -497,7 +497,7 @@ void ArrayAccess::Emit() {
     Location *t7 = CG->GenBinaryOp("||", t2, t6);
     const char *l = CG->NewLabel();
     CG->GenIfZ(t7, l);
-    Location *t8 = CG->GenLoadConstant(err_arr_out_of_bounds);
+    Location *t8 = CG->GenLoadConstant(indx_out_of_bound);
     CG->GenBuiltInCall(PrintString, t8);
     CG->GenBuiltInCall(Halt);
     CG->GenLabel(l);
@@ -540,7 +540,7 @@ void FieldAccess::CheckDecl() {
         }
     } else {
         // if has base, then leave the work to CheckType.
-        base->Check(E_CheckDecl);
+        base->Check(sem_decl);
     }
 }
 
@@ -558,7 +558,7 @@ void FieldAccess::CheckType() {
     }
 
     // must check the base expr's class type, and find in that class.
-    base->Check(E_CheckType);
+    base->Check(sem_type);
     Type *base_t = base->GetType();
     if (base_t != NULL) {
         if (!base_t->IsNamedType()) {
@@ -611,11 +611,11 @@ void FieldAccess::CheckType() {
     }
 }
 
-void FieldAccess::Check(checkT c) {
+void FieldAccess::Check(checkStep c) {
     switch (c) {
-        case E_CheckDecl:
+        case sem_decl:
             this->CheckDecl(); break;
-        case E_CheckType:
+        case sem_type:
             this->CheckType(); break;
         default:;
             // do not check anything.
@@ -672,9 +672,9 @@ void Call::CheckDecl() {
         }
     } else {
         // if has base, then leave the work to CheckType.
-        base->Check(E_CheckDecl);
+        base->Check(sem_decl);
     }
-    actuals->CheckAll(E_CheckDecl);
+    actuals->CheckAll(sem_decl);
 }
 
 void Call::CheckType() {
@@ -685,7 +685,7 @@ void Call::CheckType() {
         }
     } else {
         // must check the base expr's class type, and find in that class.
-        base->Check(E_CheckType);
+        base->Check(sem_type);
         Type * t = base->GetType();
         if (t != NULL) { // base defined.
             if (t->IsArrayType() && !strcmp(field->GetIdName(), "length")) {
@@ -713,7 +713,7 @@ void Call::CheckType() {
             }
         }
     }
-    actuals->CheckAll(E_CheckType);
+    actuals->CheckAll(sem_type);
     this->CheckFuncArgs();
 }
 
@@ -741,11 +741,11 @@ void Call::CheckFuncArgs() {
     }
 }
 
-void Call::Check(checkT c) {
+void Call::Check(checkStep c) {
     switch (c) {
-        case E_CheckDecl:
+        case sem_decl:
             this->CheckDecl(); break;
-        case E_CheckType:
+        case sem_type:
             this->CheckType(); break;
         default:;
             // do not check anything.
@@ -823,22 +823,22 @@ void NewExpr::PrintChildren(int indentLevel) {
 }
 
 void NewExpr::CheckDecl() {
-    cType->Check(E_CheckDecl, LookingForClass);
+    cType->Check(sem_decl, classReason);
 }
 
 void NewExpr::CheckType() {
-    cType->Check(E_CheckType);
+    cType->Check(sem_type);
     // cType is NamedType.
     if (cType->GetType()) { // correct cType
         semantic_type = cType;
     }
 }
 
-void NewExpr::Check(checkT c) {
+void NewExpr::Check(checkStep c) {
     switch (c) {
-        case E_CheckDecl:
+        case sem_decl:
             this->CheckDecl(); break;
-        case E_CheckType:
+        case sem_type:
             this->CheckType(); break;
         default:
             cType->Check(c);
@@ -871,7 +871,7 @@ void NewArrayExpr::PrintChildren(int indentLevel) {
 void NewArrayExpr::CheckType() {
     Type *t;
 
-    size->Check(E_CheckType);
+    size->Check(sem_type);
     t = size->GetType();
     if (t == NULL) {
         // some error accur in size, so skip it.
@@ -880,19 +880,19 @@ void NewArrayExpr::CheckType() {
     return;
     }
 
-    elemType->Check(E_CheckType);
+    elemType->Check(sem_type);
     if (!elemType->GetType()) {
         // skip the error elemType.
         return;
     } else {
         // the error size will not affect the type of new array.
         semantic_type = new ArrayType(*location, elemType);
-        semantic_type->Check(E_CheckDecl);
+        semantic_type->Check(sem_decl);
     }
 }
 
-void NewArrayExpr::Check(checkT c) {
-    if (c == E_CheckType) {
+void NewArrayExpr::Check(checkStep c) {
+    if (c == sem_type) {
         this->CheckType();
     } else {
         size->Check(c);
@@ -908,7 +908,7 @@ void NewArrayExpr::Emit() {
 
     const char *l = CG->NewLabel();
     CG->GenIfZ(t2, l);
-    Location *t3 = CG->GenLoadConstant(err_arr_bad_size);
+    Location *t3 = CG->GenLoadConstant(neg_arr_size);
     CG->GenBuiltInCall(PrintString, t3);
     CG->GenBuiltInCall(Halt);
 
@@ -923,8 +923,8 @@ void NewArrayExpr::Emit() {
     asm_loc = t9;
 }
 
-void ReadIntegerExpr::Check(checkT c) {
-    if (c == E_CheckType) {
+void ReadIntegerExpr::Check(checkStep c) {
+    if (c == sem_type) {
         semantic_type = Type::intType;
     }
 }
@@ -933,8 +933,8 @@ void ReadIntegerExpr::Emit() {
     asm_loc = CG->GenBuiltInCall(ReadInteger);
 }
 
-void ReadLineExpr::Check(checkT c) {
-    if (c == E_CheckType) {
+void ReadLineExpr::Check(checkStep c) {
+    if (c == sem_type) {
         semantic_type = Type::stringType;
     }
 }
@@ -958,8 +958,8 @@ void PostfixExpr::PrintChildren(int indentLevel) {
 }
 
 void PostfixExpr::CheckType() {
-    lvalue->Check(E_CheckType);
-    op->Check(E_CheckType);
+    lvalue->Check(sem_type);
+    op->Check(sem_type);
     Type *t = lvalue->GetType();
     if (t == NULL) {
         // some error accur in lvalue, so skip it.
@@ -971,8 +971,8 @@ void PostfixExpr::CheckType() {
     }
 }
 
-void PostfixExpr::Check(checkT c) {
-    if (c == E_CheckType) {
+void PostfixExpr::Check(checkStep c) {
+    if (c == sem_type) {
         this->CheckType();
     } else {
         lvalue->Check(c);

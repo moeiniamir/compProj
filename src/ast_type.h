@@ -49,8 +49,8 @@ class Type : public Node
         { return !this->IsNamedType() && !this->IsArrayType(); }
     virtual bool IsNamedType() { return false; }
     virtual bool IsArrayType() { return false; }
-    void Check(checkT c);
-    virtual void Check(checkT c, reasonT r) { Check(c); }
+    void Check(checkStep c);
+    virtual void Check(checkStep c, checkFor r) { Check(c); }
     virtual void SetSelfType() { semantic_type = this; }
 
     // code generation
@@ -61,7 +61,7 @@ class NamedType : public Type
 {
   protected:
     Identifier *id;
-    void CheckDecl(reasonT r);
+    void CheckDecl(checkFor r);
 
   public:
     NamedType(Identifier *i);
@@ -77,8 +77,8 @@ class NamedType : public Type
     bool IsCompatibleWith(Type *other);
 
     bool IsNamedType() { return true; }
-    void Check(checkT c, reasonT r);
-    void Check(checkT c) { Check(c, LookingForType); }
+    void Check(checkStep c, checkFor r);
+    void Check(checkStep c) { Check(c, typeReason); }
 };
 
 class ArrayType : public Type
@@ -100,7 +100,7 @@ class ArrayType : public Type
     bool IsCompatibleWith(Type *other);
 
     bool IsArrayType() { return true; }
-    void Check(checkT c);
+    void Check(checkStep c);
 };
 
 

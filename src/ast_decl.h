@@ -75,7 +75,7 @@ class VariableDecl : public Decl
     bool IsVariableDecl() { return true; }
 
     void BuildSymTable();
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void AssignOffset();
@@ -105,7 +105,7 @@ class ClassDecl : public Decl
 
     bool IsClassDecl() { return true; }
     void BuildSymTable();
-    void Check(checkT c);
+    void Check(checkStep c);
     bool IsChildOf(Decl *other);
     NamedType * GetExtends() { return extends; }
 
@@ -131,7 +131,7 @@ class InterfaceDecl : public Decl
 
     bool IsInterfaceDecl() { return true; }
     void BuildSymTable();
-    void Check(checkT c);
+    void Check(checkStep c);
     List<Decl*> * GetMembers() { return members; }
 
     // code generation
@@ -160,7 +160,7 @@ class FunctionDecl : public Decl
     bool IsEquivalentTo(Decl *fn);
 
     void BuildSymTable();
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void AddPrefixToMethods();

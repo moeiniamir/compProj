@@ -36,8 +36,8 @@ void Type::PrintChildren(int indentLevel) {
     if (asm_loc) asm_loc->Print();
 }
 
-void Type::Check(checkT c) {
-    if (c == E_CheckDecl) {
+void Type::Check(checkStep c) {
+    if (c == sem_decl) {
         Type::intType->SetSelfType();
         Type::doubleType->SetSelfType();
         Type::voidType->SetSelfType();
@@ -60,15 +60,15 @@ void NamedType::PrintChildren(int indentLevel) {
     id->Print(indentLevel+1);
 }
 
-void NamedType::CheckDecl(reasonT r) {
+void NamedType::CheckDecl(checkFor r) {
     Decl *d = symtab->Lookup(this->id);
     if (d == NULL || (!d->IsClassDecl() && !d->IsInterfaceDecl())) {
         semantic_error = 1;
         return;
-    } else if (r == LookingForClass && !d->IsClassDecl()) {
+    } else if (r == classReason && !d->IsClassDecl()) {
         semantic_error = 1;
         return;
-    } else if (r == LookingForInterface && !d->IsInterfaceDecl()) {
+    } else if (r == interfaceReason && !d->IsInterfaceDecl()) {
         semantic_error = 1;
         return;
     } else {
@@ -77,8 +77,8 @@ void NamedType::CheckDecl(reasonT r) {
     }
 }
 
-void NamedType::Check(checkT c, reasonT r) {
-    if (c == E_CheckDecl) {
+void NamedType::Check(checkStep c, checkFor r) {
+    if (c == sem_decl) {
         this->CheckDecl(r);
     } else {
         id->Check(c);
@@ -134,14 +134,14 @@ void ArrayType::PrintChildren(int indentLevel) {
 }
 
 void ArrayType::CheckDecl() {
-    elemType->Check(E_CheckDecl);
+    elemType->Check(sem_decl);
     if (elemType->GetType()) {
         semantic_type = this;
     }
 }
 
-void ArrayType::Check(checkT c) {
-    if (c == E_CheckDecl) {
+void ArrayType::Check(checkStep c) {
+    if (c == sem_decl) {
         this->CheckDecl();
     } else {
         elemType->Check(c);

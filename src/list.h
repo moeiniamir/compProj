@@ -86,7 +86,7 @@ template<class Element> class List {
         { for (int i = 0; i < NumElements(); i++)
              Nth(i)->BuildSymTable(); }
         // Check all the elements of a list.
-    void CheckAll(checkT c)
+    void CheckAll(checkStep c)
         { for (int i = 0; i < NumElements(); i++)
              Nth(i)->Check(c); }
         // Emit TAC in code generation phase.

@@ -40,7 +40,7 @@ class Program : public Node
 
      void BuildSymTable();
      void Check();
-     void Check(checkT c) { Check(); }
+     void Check(checkStep c) { Check(); }
 
     // code generation
     void Emit();
@@ -65,7 +65,7 @@ class StmtBlock : public Stmt
     void PrintChildren(int indentLevel);
 
     void BuildSymTable();
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -108,7 +108,7 @@ class ForStmt : public LoopStmt
     void PrintChildren(int indentLevel);
 
     void BuildSymTable();
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -125,7 +125,7 @@ class WhileStmt : public LoopStmt
     void PrintChildren(int indentLevel);
 
     void BuildSymTable();
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -143,7 +143,7 @@ class IfStmt : public ConditionalStmt
     void PrintChildren(int indentLevel);
 
     void BuildSymTable();
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -154,7 +154,7 @@ class BreakStmt : public Stmt
   public:
     BreakStmt(yyltype loc) : Stmt(loc) {}
     const char *GetPrintNameForNode() { return "BreakStmt"; }
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -175,7 +175,7 @@ class CaseStmt : public Stmt
     void PrintChildren(int indentLevel);
 
     void BuildSymTable();
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -197,7 +197,7 @@ class SwitchStmt : public Stmt
     void PrintChildren(int indentLevel);
 
     void BuildSymTable();
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -215,7 +215,7 @@ class ReturnStmt : public Stmt
     const char *GetPrintNameForNode() { return "ReturnStmt"; }
     void PrintChildren(int indentLevel);
 
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();
@@ -231,7 +231,7 @@ class PrintStmt : public Stmt
     const char *GetPrintNameForNode() { return "PrintStmt"; }
     void PrintChildren(int indentLevel);
 
-    void Check(checkT c);
+    void Check(checkStep c);
 
     // code generation
     void Emit();

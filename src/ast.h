@@ -76,7 +76,7 @@ class Node
     virtual void PrintChildren(int indentLevel)  {}
 
     virtual void BuildSymTable() {}
-    virtual void Check(checkT c) {}
+    virtual void Check(checkStep c) {}
     virtual Type * GetType() { return semantic_type; }
     virtual bool IsLoopStmt() { return false; }
     virtual bool IsSwitchStmt() { return false; }
@@ -103,7 +103,7 @@ class Identifier : public Node
         { return out << id->name; }
 
     char *GetIdName() { return name; }
-    void Check(checkT c);
+    void Check(checkStep c);
     bool IsEquivalentTo(Identifier *other);
     void SetDecl(Decl *d) { decl = d; }
     Decl * GetDecl() { return decl; }

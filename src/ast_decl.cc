@@ -45,15 +45,15 @@ void VariableDecl::BuildSymTable() {
 }
 
 void VariableDecl::CheckDecl() {
-    type->Check(E_CheckDecl);
-    id->Check(E_CheckDecl);
+    type->Check(sem_decl);
+    id->Check(sem_decl);
 
     semantic_type = type->GetType();
 }
 
-void VariableDecl::Check(checkT c) {
+void VariableDecl::Check(checkStep c) {
     switch (c) {
-        case E_CheckDecl:
+        case sem_decl:
             this->CheckDecl(); break;
         default:
             type->Check(c);
@@ -133,17 +133,17 @@ void ClassDecl::BuildSymTable() {
 }
 
 void ClassDecl::CheckDecl() {
-    id->Check(E_CheckDecl);
+    id->Check(sem_decl);
     // check extends.
     if (extends) {
-        extends->Check(E_CheckDecl, LookingForClass);
+        extends->Check(sem_decl, classReason);
     }
     // check interface.
     for (int i = 0; i < implements->NumElements(); i++) {
-        implements->Nth(i)->Check(E_CheckDecl, LookingForInterface);
+        implements->Nth(i)->Check(sem_decl, interfaceReason);
     }
     symtab->EnterScope();
-    members->CheckAll(E_CheckDecl);
+    members->CheckAll(sem_decl);
     symtab->ExitScope();
 
     semantic_type = new NamedType(id);
@@ -206,7 +206,7 @@ void ClassDecl::CheckInherit() {
                 }
             }
             // check scopes within the function and keep active scope correct.
-            d->Check(E_CheckInherit);
+            d->Check(sem_inh);
         }
     }
 
@@ -240,11 +240,11 @@ void ClassDecl::CheckInherit() {
     symtab->ExitScope();
 }
 
-void ClassDecl::Check(checkT c) {
+void ClassDecl::Check(checkStep c) {
     switch (c) {
-        case E_CheckDecl:
+        case sem_decl:
             this->CheckDecl(); break;
-        case E_CheckInherit:
+        case sem_inh:
             this->CheckInherit(); break;
         default:
             id->Check(c);
@@ -406,9 +406,9 @@ void InterfaceDecl::BuildSymTable() {
     symtab->ExitScope();
 }
 
-void InterfaceDecl::Check(checkT c) {
+void InterfaceDecl::Check(checkStep c) {
     switch (c) {
-        case E_CheckDecl:
+        case sem_decl:
             semantic_type = new NamedType(id);
             semantic_type->SetSelfType();
             // fall through.
@@ -466,11 +466,11 @@ void FunctionDecl::BuildSymTable() {
 }
 
 void FunctionDecl::CheckDecl() {
-    returnType->Check(E_CheckDecl);
-    id->Check(E_CheckDecl);
+    returnType->Check(sem_decl);
+    id->Check(sem_decl);
     symtab->EnterScope();
-    formals->CheckAll(E_CheckDecl);
-    if (body) body->Check(E_CheckDecl);
+    formals->CheckAll(sem_decl);
+    if (body) body->Check(sem_decl);
     symtab->ExitScope();
 
     // check the signature of the main function.
@@ -484,9 +484,9 @@ void FunctionDecl::CheckDecl() {
     semantic_type = returnType->GetType();
 }
 
-void FunctionDecl::Check(checkT c) {
+void FunctionDecl::Check(checkStep c) {
     switch (c) {
-        case E_CheckDecl:
+        case sem_decl:
             this->CheckDecl(); break;
         default:
             returnType->Check(c);
