@@ -35,8 +35,6 @@ class Program : public Node
 
   public:
      Program(List<Decl*> *declList);
-     const char *GetPrintNameForNode() { return "Program"; }
-     void PrintChildren(int indentLevel);
 
      void BuildSymTable();
      void Check();
@@ -61,8 +59,6 @@ class StmtBlock : public Stmt
 
   public:
     StmtBlock(List<VariableDecl*> *variableDeclarations, List<Stmt*> *statements);
-    const char *GetPrintNameForNode() { return "StmtBlock"; }
-    void PrintChildren(int indentLevel);
 
     void BuildSymTable();
     void Check(checkStep c);
@@ -104,8 +100,7 @@ class ForStmt : public LoopStmt
 
   public:
     ForStmt(Expr *init, Expr *test, Expr *step, Stmt *body);
-    const char *GetPrintNameForNode() { return "ForStmt"; }
-    void PrintChildren(int indentLevel);
+
 
     void BuildSymTable();
     void Check(checkStep c);
@@ -121,8 +116,7 @@ class WhileStmt : public LoopStmt
 
   public:
     WhileStmt(Expr *test, Stmt *body) : LoopStmt(test, body) {}
-    const char *GetPrintNameForNode() { return "WhileStmt"; }
-    void PrintChildren(int indentLevel);
+
 
     void BuildSymTable();
     void Check(checkStep c);
@@ -139,8 +133,7 @@ class IfStmt : public ConditionalStmt
 
   public:
     IfStmt(Expr *test, Stmt *thenBody, Stmt *elseBody);
-    const char *GetPrintNameForNode() { return "IfStmt"; }
-    void PrintChildren(int indentLevel);
+
 
     void BuildSymTable();
     void Check(checkStep c);
@@ -153,7 +146,6 @@ class BreakStmt : public Stmt
 {
   public:
     BreakStmt(yyltype loc) : Stmt(loc) {}
-    const char *GetPrintNameForNode() { return "BreakStmt"; }
     void Check(checkStep c);
 
     // code generation
@@ -171,8 +163,7 @@ class CaseStmt : public Stmt
 
   public:
     CaseStmt(IntLiteral *v, List<Stmt*> *stmts);
-    const char *GetPrintNameForNode() { return value ? "Case" : "Default"; }
-    void PrintChildren(int indentLevel);
+
 
     void BuildSymTable();
     void Check(checkStep c);
@@ -193,8 +184,7 @@ class SwitchStmt : public Stmt
 
   public:
     SwitchStmt(Expr *expr, List<CaseStmt*> *cases);
-    const char *GetPrintNameForNode() { return "SwitchStmt"; }
-    void PrintChildren(int indentLevel);
+
 
     void BuildSymTable();
     void Check(checkStep c);
@@ -212,8 +202,7 @@ class ReturnStmt : public Stmt
 
   public:
     ReturnStmt(yyltype loc, Expr *expr);
-    const char *GetPrintNameForNode() { return "ReturnStmt"; }
-    void PrintChildren(int indentLevel);
+
 
     void Check(checkStep c);
 
@@ -228,8 +217,7 @@ class PrintStmt : public Stmt
 
   public:
     PrintStmt(List<Expr*> *arguments);
-    const char *GetPrintNameForNode() { return "PrintStmt"; }
-    void PrintChildren(int indentLevel);
+
 
     void Check(checkStep c);
 

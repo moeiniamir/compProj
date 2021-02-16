@@ -13,15 +13,9 @@ Location::Location(Segment s, int o, const char *name) :
 Location::Location(Segment s, int o, const char *name, Location *b) :
     variableName(strdup(name)), segment(s), offset(o), base(b) {}
 
-void Location::Print() {
-    const char *s = (segment == fpRelative) ? "FP" : "GP";
-    const char *b = (base == NULL) ? "NIL" : base->GetName();
-    printf(" ~~[%s,%s,%d,%s]", variableName, s, offset, b);
-}
 
-void Instruction::Print() {
-    printf("\t%s ;\n", printed);
-}
+
+
 
 void Instruction::Emit(Mips *mips) {
     Mips::CurrentInstruction ci(*mips, this);
@@ -134,9 +128,7 @@ Label::Label(const char *l) : label(strdup(l)) {
     *printed = '\0';
 }
 
-void Label::Print() {
-    printf("%s:\n", label);
-}
+
 
 void Label::EmitSpecific(Mips *mips) {
     mips->EmitLabel(label);
@@ -236,12 +228,7 @@ VTable::VTable(const char *l, List<const char *> *m)
     sprintf(printed, "VTable for class %s", l);
 }
 
-void VTable::Print() {
-    printf("VTable %s =\n", label);
-    for (int i = 0; i < methodLabels->NumElements(); i++)
-        printf("\t%s,\n", methodLabels->Nth(i));
-    printf("; \n");
-}
+
 
 void VTable::EmitSpecific(Mips *mips) {
     mips->EmitVTable(label, methodLabels);

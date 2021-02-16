@@ -208,6 +208,5 @@ void CodeGenerator::DoFinalCodeGen() {
     std::stringstream buf;
     buf << i.rdbuf();
     printf("%s", buf.str().c_str());
-
 }
 

@@ -68,12 +68,6 @@ class Node
     void SetParent(Node *p)  { parent = p; }
     Node *GetParent()        { return parent; }
 
-    virtual const char *GetPrintNameForNode() = 0;
-
-    // Print() is deliberately _not_ virtual
-    // subclasses should override PrintChildren() instead
-    void Print(int indentLevel, const char *label = NULL);
-    virtual void PrintChildren(int indentLevel)  {}
 
     virtual void BuildSymTable() {}
     virtual void Check(checkStep c) {}
@@ -97,8 +91,6 @@ class Identifier : public Node
 
   public:
     Identifier(yyltype loc, const char *name);
-    const char *GetPrintNameForNode()   { return "Identifier"; }
-    void PrintChildren(int indentLevel);
     friend std::ostream& operator<<(std::ostream& out, Identifier *id)
         { return out << id->name; }
 
@@ -124,7 +116,6 @@ class Error : public Node
 {
   public:
     Error() : Node() {}
-    const char *GetPrintNameForNode()   { return "Error"; }
 };
 
 

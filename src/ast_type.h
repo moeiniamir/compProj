@@ -34,8 +34,7 @@ class Type : public Node
     Type(yyltype loc) : Node(loc) { semantic_type = NULL; }
     Type(const char *str);
 
-    const char *GetPrintNameForNode() { return "Type"; }
-    void PrintChildren(int indentLevel);
+
 
     virtual void PrintToStream(std::ostream& out) { out << typeName; }
     friend std::ostream& operator<<(std::ostream& out, Type *t)
@@ -66,8 +65,7 @@ class NamedType : public Type
   public:
     NamedType(Identifier *i);
 
-    const char *GetPrintNameForNode() { return "NamedType"; }
-    void PrintChildren(int indentLevel);
+
 
     void PrintToStream(std::ostream& out) { out << id; }
 
@@ -90,8 +88,7 @@ class ArrayType : public Type
   public:
     ArrayType(yyltype loc, Type *elemType);
 
-    const char *GetPrintNameForNode() { return "ArrayType"; }
-    void PrintChildren(int indentLevel);
+
 
     void PrintToStream(std::ostream& out) { out << elemType << "[]"; }
 

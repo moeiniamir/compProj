@@ -54,7 +54,7 @@ class Location
     int GetOffset() const           { return offset; }
     Location* GetBase() const       { return base; }
 
-    void Print();
+
 };
 
 // base class from which all Tac instructions derived
@@ -65,7 +65,6 @@ class Instruction {
     char printed[128];
 
   public:
-    virtual void Print();
     virtual void EmitSpecific(Mips *mips) = 0;
     void Emit(Mips *mips);
 };
@@ -170,7 +169,7 @@ class Label: public Instruction
     const char *label;
   public:
     Label(const char *label);
-    void Print();
+
     void EmitSpecific(Mips *mips);
     const char* text() const { return label; }
 };
@@ -258,7 +257,7 @@ class VTable: public Instruction
     const char *label;
  public:
     VTable(const char *labelForTable, List<const char *> *methodLabels);
-    void Print();
+
     void EmitSpecific(Mips *mips);
 };
 

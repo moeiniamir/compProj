@@ -68,8 +68,6 @@ class VariableDecl : public Decl
 
   public:
     VariableDecl(Identifier *name, Type *type);
-    const char *GetPrintNameForNode() { return "VariableDecl"; }
-    void PrintChildren(int indentLevel);
 
     Type * GetType() { return type; }
     bool IsVariableDecl() { return true; }
@@ -100,8 +98,6 @@ class ClassDecl : public Decl
   public:
     ClassDecl(Identifier *name, NamedType *extends,
               List<NamedType*> *implements, List<Decl*> *members);
-    const char *GetPrintNameForNode() { return "ClassDecl"; }
-    void PrintChildren(int indentLevel);
 
     bool IsClassDecl() { return true; }
     void BuildSymTable();
@@ -126,8 +122,6 @@ class InterfaceDecl : public Decl
 
   public:
     InterfaceDecl(Identifier *name, List<Decl*> *members);
-    const char *GetPrintNameForNode() { return "InterfaceDecl"; }
-    void PrintChildren(int indentLevel);
 
     bool IsInterfaceDecl() { return true; }
     void BuildSymTable();
@@ -150,8 +144,6 @@ class FunctionDecl : public Decl
   public:
     FunctionDecl(Identifier *name, Type *returnType, List<VariableDecl*> *formals);
     void SetFunctionBody(Stmt *b);
-    const char *GetPrintNameForNode() { return "FunctionDecl"; }
-    void PrintChildren(int indentLevel);
 
     Type * GetReturnType() { return returnType; }
     List<VariableDecl*> * GetFormals() { return formals; }
