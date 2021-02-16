@@ -11,6 +11,7 @@ extern char *yytext;
 
 
 int yylex();
+
 void yyrestart(FILE *fp);
 
 

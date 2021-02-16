@@ -136,23 +136,7 @@ SINGLE_COMMENT    ("//"[^\n]*)
 
 %%
 
-
-
 void initializeFlex()
 {
-
     yy_flex_debug = false;
-
-
-
-
 }
-
-
-
-
-
-
-
-
-

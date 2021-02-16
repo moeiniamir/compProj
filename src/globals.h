@@ -4,20 +4,29 @@
 #define _H_globals
 
 #include <string>
+
 using std::string;
+
 class Type;
+
 class Identifier;
+
 class Expr;
+
 class BreakStmt;
+
 class ReturnStmt;
+
 class This;
+
 class Decl;
+
 class Operator;
 
 
-
-
-typedef enum {typeReason, classReason, interfaceReason, variableReason, functionReason} checkFor;
+typedef enum {
+    typeReason, classReason, interfaceReason, variableReason, functionReason
+} checkFor;
 
 typedef enum {
     sem_decl,
@@ -33,9 +42,7 @@ extern int syntax_error;
 extern int semantic_error;
 
 
-
-typedef struct yyltype
-{
+typedef struct yyltype {
     int timestamp;
     int first_line, first_column;
     int last_line, last_column;
@@ -44,13 +51,10 @@ typedef struct yyltype
 #define YYLTYPE yyltype
 
 
-
 extern struct yyltype yylloc;
 
 
-
-inline yyltype Join(yyltype first, yyltype last)
-{
+inline yyltype Join(yyltype first, yyltype last) {
     yyltype combined;
     combined.first_column = first.first_column;
     combined.first_line = first.first_line;
@@ -60,8 +64,7 @@ inline yyltype Join(yyltype first, yyltype last)
 }
 
 
-inline yyltype Join(yyltype *firstPtr, yyltype *lastPtr)
-{
+inline yyltype Join(yyltype *firstPtr, yyltype *lastPtr) {
     return Join(*firstPtr, *lastPtr);
 }
 

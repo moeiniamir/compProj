@@ -21,8 +21,6 @@ Node::Node() {
 }
 
 
-
-
 Identifier::Identifier(yyltype loc, const char *n) : Node(loc) {
     name = strdup(n);
 }
@@ -55,18 +53,15 @@ void Identifier::Emit() {
 }
 
 void Identifier::AddPrefix(const char *prefix) {
-    char *s = (char *)malloc(strlen(name) + strlen(prefix) + 1);
+    char *s = (char *) malloc(strlen(name) + strlen(prefix) + 1);
     sprintf(s, "%s%s", prefix, name);
     name = s;
 }
 
 
-
-
-
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
 
-    (id=n)->SetParent(this);
+    (id = n)->SetParent(this);
     idx = -1;
     semantic_type = NULL;
 }
@@ -74,7 +69,7 @@ Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
 
 VariableDecl::VariableDecl(Identifier *n, Type *t) : Decl(n) {
 
-    (type=t)->SetParent(this);
+    (type = t)->SetParent(this);
     class_member_ofst = -1;
 }
 
@@ -99,7 +94,8 @@ void VariableDecl::CheckDecl() {
 void VariableDecl::Check(checkStep c) {
     switch (c) {
         case sem_decl:
-            this->CheckDecl(); break;
+            this->CheckDecl();
+            break;
         default:
             type->Check(c);
             id->Check(c);
@@ -132,13 +128,13 @@ void VariableDecl::Emit() {
     }
 }
 
-ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<Decl*> *m) : Decl(n) {
+ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType *> *imp, List<Decl *> *m) : Decl(n) {
 
 
     extends = ex;
     if (extends) extends->SetParent(this);
-    (implements=imp)->SetParentAll(this);
-    (members=m)->SetParentAll(this);
+    (implements = imp)->SetParentAll(this);
+    (members = m)->SetParentAll(this);
     instance_size = 4;
     vtable_size = 0;
 }
@@ -217,8 +213,8 @@ void ClassDecl::CheckInherit() {
                     return;
                 } else {
 
-                    FunctionDecl *fn1 = dynamic_cast<FunctionDecl*>(d);
-                    FunctionDecl *fn2 = dynamic_cast<FunctionDecl*>(t);
+                    FunctionDecl *fn1 = dynamic_cast<FunctionDecl *>(d);
+                    FunctionDecl *fn2 = dynamic_cast<FunctionDecl *>(t);
                     if (fn1->GetType() && fn2->GetType()
                         && !fn1->IsEquivalentTo(fn2)) {
 
@@ -231,8 +227,8 @@ void ClassDecl::CheckInherit() {
             t = scopeHandler->LookupInterface(d->GetId());
             if (t != NULL) {
 
-                FunctionDecl *fn1 = dynamic_cast<FunctionDecl*>(d);
-                FunctionDecl *fn2 = dynamic_cast<FunctionDecl*>(t);
+                FunctionDecl *fn1 = dynamic_cast<FunctionDecl *>(d);
+                FunctionDecl *fn2 = dynamic_cast<FunctionDecl *>(t);
                 if (fn1->GetType() && fn2->GetType()
                     && !fn1->IsEquivalentTo(fn2)) {
 
@@ -249,7 +245,7 @@ void ClassDecl::CheckInherit() {
     for (int i = 0; i < implements->NumElements(); i++) {
         Decl *d = implements->Nth(i)->GetId()->GetDecl();
         if (d != NULL) {
-            List<Decl*> *m = dynamic_cast<InterfaceDecl*>(d)->GetMembers();
+            List<Decl *> *m = dynamic_cast<InterfaceDecl *>(d)->GetMembers();
 
             for (int j = 0; j < m->NumElements(); j++) {
                 Identifier *mid = m->Nth(j)->GetId();
@@ -260,8 +256,8 @@ void ClassDecl::CheckInherit() {
                     break;
                 } else {
 
-                    FunctionDecl *fn1 = dynamic_cast<FunctionDecl*>(m->Nth(j));
-                    FunctionDecl *fn2 = dynamic_cast<FunctionDecl*>(t);
+                    FunctionDecl *fn1 = dynamic_cast<FunctionDecl *>(m->Nth(j));
+                    FunctionDecl *fn2 = dynamic_cast<FunctionDecl *>(t);
                     if (!fn1 || !fn2 || !fn1->GetType() || !fn2->GetType()
                         || !fn1->IsEquivalentTo(fn2)) {
                         semantic_error = 1;
@@ -278,9 +274,11 @@ void ClassDecl::CheckInherit() {
 void ClassDecl::Check(checkStep c) {
     switch (c) {
         case sem_decl:
-            this->CheckDecl(); break;
+            this->CheckDecl();
+            break;
         case sem_inh:
-            this->CheckInherit(); break;
+            this->CheckInherit();
+            break;
         default:
             id->Check(c);
             if (extends) extends->Check(c);
@@ -301,7 +299,7 @@ bool ClassDecl::IsChildOf(Decl *other) {
         } else {
 
             Decl *d = extends->GetId()->GetDecl();
-            return dynamic_cast<ClassDecl*>(d)->IsChildOf(other);
+            return dynamic_cast<ClassDecl *>(d)->IsChildOf(other);
         }
     } else if (other->IsInterfaceDecl()) {
         for (int i = 0; i < implements->NumElements(); i++) {
@@ -315,20 +313,20 @@ bool ClassDecl::IsChildOf(Decl *other) {
         } else {
 
             Decl *d = extends->GetId()->GetDecl();
-            return dynamic_cast<ClassDecl*>(d)->IsChildOf(other);
+            return dynamic_cast<ClassDecl *>(d)->IsChildOf(other);
         }
     } else {
         return false;
     }
 }
 
-void ClassDecl::AddMembersToList(List<VariableDecl*> *vars, List<FunctionDecl*> *fns) {
+void ClassDecl::AddMembersToList(List<VariableDecl *> *vars, List<FunctionDecl *> *fns) {
     for (int i = members->NumElements() - 1; i >= 0; i--) {
         Decl *d = members->Nth(i);
         if (d->IsVariableDecl()) {
-            vars->InsertAt(dynamic_cast<VariableDecl*>(d), 0);
+            vars->InsertAt(dynamic_cast<VariableDecl *>(d), 0);
         } else if (d->IsFunctionDecl()) {
-            fns->InsertAt(dynamic_cast<FunctionDecl*>(d), 0);
+            fns->InsertAt(dynamic_cast<FunctionDecl *>(d), 0);
         }
     }
 }
@@ -336,14 +334,14 @@ void ClassDecl::AddMembersToList(List<VariableDecl*> *vars, List<FunctionDecl*> 
 void ClassDecl::AssignOffset() {
 
 
-    var_members = new List<VariableDecl*>;
-    methods = new List<FunctionDecl*>;
+    var_members = new List<VariableDecl *>;
+    methods = new List<FunctionDecl *>;
     ClassDecl *c = this;
     while (c) {
         c->AddMembersToList(var_members, methods);
         NamedType *t = c->GetExtends();
         if (!t) break;
-        c = dynamic_cast<ClassDecl*>(t->GetId()->GetDecl());
+        c = dynamic_cast<ClassDecl *>(t->GetId()->GetDecl());
     }
 
 
@@ -405,18 +403,18 @@ void ClassDecl::Emit() {
     members->EmitAll();
 
 
-    List<const char*> *method_labels = new List<const char*>;
+    List<const char *> *method_labels = new List<const char *>;
     for (int i = 0; i < methods->NumElements(); i++) {
-        FunctionDecl* fn = methods->Nth(i);
+        FunctionDecl *fn = methods->Nth(i);
 
         method_labels->Append(fn->GetId()->GetIdName());
     }
     CG->GenVTable(id->GetIdName(), method_labels);
 }
 
-InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
+InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl *> *m) : Decl(n) {
 
-    (members=m)->SetParentAll(this);
+    (members = m)->SetParentAll(this);
 }
 
 void InterfaceDecl::BuildSymTable() {
@@ -453,16 +451,16 @@ void InterfaceDecl::Emit() {
 
 }
 
-FunctionDecl::FunctionDecl(Identifier *n, Type *r, List<VariableDecl*> *d) : Decl(n) {
+FunctionDecl::FunctionDecl(Identifier *n, Type *r, List<VariableDecl *> *d) : Decl(n) {
 
-    (returnType=r)->SetParent(this);
-    (formals=d)->SetParentAll(this);
+    (returnType = r)->SetParent(this);
+    (formals = d)->SetParentAll(this);
     body = NULL;
     vtable_ofst = -1;
 }
 
 void FunctionDecl::SetFunctionBody(Stmt *b) {
-    (body=b)->SetParent(this);
+    (body = b)->SetParent(this);
 }
 
 void FunctionDecl::BuildSymTable() {
@@ -502,7 +500,8 @@ void FunctionDecl::CheckDecl() {
 void FunctionDecl::Check(checkStep c) {
     switch (c) {
         case sem_decl:
-            this->CheckDecl(); break;
+            this->CheckDecl();
+            break;
         default:
             returnType->Check(c);
             id->Check(c);
@@ -519,7 +518,7 @@ bool FunctionDecl::IsEquivalentTo(Decl *other) {
     if (!other->IsFunctionDecl()) {
         return false;
     }
-    FunctionDecl *fn = dynamic_cast<FunctionDecl*>(other);
+    FunctionDecl *fn = dynamic_cast<FunctionDecl *>(other);
     if (!returnType->IsEquivalentTo(fn->GetType())) {
         return false;
     }
@@ -529,9 +528,9 @@ bool FunctionDecl::IsEquivalentTo(Decl *other) {
     for (int i = 0; i < formals->NumElements(); i++) {
 
         Type *var_type1 =
-                (dynamic_cast<VariableDecl*>(formals->Nth(i)))->GetType();
+                (dynamic_cast<VariableDecl *>(formals->Nth(i)))->GetType();
         Type *var_type2 =
-                (dynamic_cast<VariableDecl*>(fn->GetFormals()->Nth(i)))->GetType();
+                (dynamic_cast<VariableDecl *>(fn->GetFormals()->Nth(i)))->GetType();
         if (!var_type1->IsEquivalentTo(var_type2)) {
             return false;
         }
@@ -542,7 +541,7 @@ bool FunctionDecl::IsEquivalentTo(Decl *other) {
 void FunctionDecl::AddPrefixToMethods() {
 
 
-    Decl *d = dynamic_cast<Decl*>(this->GetParent());
+    Decl *d = dynamic_cast<Decl *>(this->GetParent());
     if (d && d->IsClassDecl()) {
         id->AddPrefix(".");
         id->AddPrefix(d->GetId()->GetIdName());
@@ -564,7 +563,7 @@ void FunctionDecl::Emit() {
 
     }
 
-    Decl *d = dynamic_cast<Decl*>(this->GetParent());
+    Decl *d = dynamic_cast<Decl *>(this->GetParent());
     CG->GenLabel(id->GetIdName());
 
 
@@ -595,9 +594,6 @@ void FunctionDecl::Emit() {
 
     CG->GenEndFunc();
 }
-
-
-
 
 
 void EmptyExpr::Check(checkStep c) {
@@ -684,17 +680,17 @@ Operator::Operator(yyltype loc, const char *tok) : Node(loc) {
 CompoundExpr::CompoundExpr(Expr *l, Operator *o, Expr *r)
         : Expr(Join(l->GetLocation(), r->GetLocation())) {
 
-    (op=o)->SetParent(this);
-    (left=l)->SetParent(this);
-    (right=r)->SetParent(this);
+    (op = o)->SetParent(this);
+    (left = l)->SetParent(this);
+    (right = r)->SetParent(this);
 }
 
 CompoundExpr::CompoundExpr(Operator *o, Expr *r)
         : Expr(Join(o->GetLocation(), r->GetLocation())) {
 
     left = NULL;
-    (op=o)->SetParent(this);
-    (right=r)->SetParent(this);
+    (op = o)->SetParent(this);
+    (right = r)->SetParent(this);
 }
 
 void ArithmeticExpr::CheckType() {
@@ -979,8 +975,8 @@ void This::Emit() {
 }
 
 ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
-    (base=b)->SetParent(this);
-    (subscript=s)->SetParent(this);
+    (base = b)->SetParent(this);
+    (subscript = s)->SetParent(this);
 }
 
 void ArrayAccess::CheckType() {
@@ -1009,7 +1005,7 @@ void ArrayAccess::CheckType() {
 
     if (!err) {
 
-        semantic_type = (dynamic_cast<ArrayType*>(t))->GetElemType();
+        semantic_type = (dynamic_cast<ArrayType *>(t))->GetElemType();
     }
 }
 
@@ -1047,17 +1043,17 @@ void ArrayAccess::Emit() {
     asm_loc = t11;
 }
 
-Location * ArrayAccess::GetEmitLocDeref() {
+Location *ArrayAccess::GetEmitLocDeref() {
     Location *t = CG->GenLoad(asm_loc, 0);
     return t;
 }
 
 FieldAccess::FieldAccess(Expr *b, Identifier *f)
-        : LValue(b? Join(b->GetLocation(), f->GetLocation()) : *f->GetLocation()) {
+        : LValue(b ? Join(b->GetLocation(), f->GetLocation()) : *f->GetLocation()) {
 
     base = b;
     if (base) base->SetParent(this);
-    (field=f)->SetParent(this);
+    (field = f)->SetParent(this);
 }
 
 void FieldAccess::CheckDecl() {
@@ -1100,16 +1096,12 @@ void FieldAccess::CheckType() {
         }
 
         Decl *d = scopeHandler->LookupField(
-                dynamic_cast<NamedType*>(base_t)->GetId(), field);
+                dynamic_cast<NamedType *>(base_t)->GetId(), field);
 
         if (d == NULL || !d->IsVariableDecl()) {
             semantic_error = 1;
             return;
         } else {
-
-
-
-
 
 
             Decl *cur_class = scopeHandler->LookupThis();
@@ -1124,7 +1116,7 @@ void FieldAccess::CheckType() {
 
             Type *cur_t = cur_class->GetType();
             d = scopeHandler->LookupField(
-                    dynamic_cast<NamedType*>(cur_t)->GetId(), field);
+                    dynamic_cast<NamedType *>(cur_t)->GetId(), field);
 
             if (d == NULL || !d->IsVariableDecl()) {
                 semantic_error = 1;
@@ -1146,9 +1138,11 @@ void FieldAccess::CheckType() {
 void FieldAccess::Check(checkStep c) {
     switch (c) {
         case sem_decl:
-            this->CheckDecl(); break;
+            this->CheckDecl();
+            break;
         case sem_type:
-            this->CheckType(); break;
+            this->CheckType();
+            break;
         default:;
 
     }
@@ -1165,7 +1159,7 @@ void FieldAccess::Emit() {
                                asm_loc->GetName(), base->GetEmitLocDeref());
 }
 
-Location * FieldAccess::GetEmitLocDeref() {
+Location *FieldAccess::GetEmitLocDeref() {
     Location *t = asm_loc;
     if (t->GetBase() != NULL) {
 
@@ -1174,12 +1168,12 @@ Location * FieldAccess::GetEmitLocDeref() {
     return t;
 }
 
-Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
+Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr *> *a) : Expr(loc) {
 
     base = b;
     if (base) base->SetParent(this);
-    (field=f)->SetParent(this);
-    (actuals=a)->SetParentAll(this);
+    (field = f)->SetParent(this);
+    (actuals = a)->SetParentAll(this);
 }
 
 void Call::CheckDecl() {
@@ -1210,7 +1204,7 @@ void Call::CheckType() {
     } else {
 
         base->Check(sem_type);
-        Type * t = base->GetType();
+        Type *t = base->GetType();
         if (t != NULL) {
             if (t->IsArrayType() && !strcmp(field->GetIdName(), "length")) {
 
@@ -1226,7 +1220,7 @@ void Call::CheckType() {
                 return;
             } else {
                 Decl *d = scopeHandler->LookupField(
-                        dynamic_cast<NamedType*>(t)->GetId(), field);
+                        dynamic_cast<NamedType *>(t)->GetId(), field);
                 if (d == NULL || !d->IsFunctionDecl()) {
                     semantic_error = 1;
                     return;
@@ -1244,8 +1238,8 @@ void Call::CheckType() {
 void Call::CheckFuncArgs() {
     Decl *f = field->GetDecl();
     if (!f || !f->IsFunctionDecl()) return;
-    FunctionDecl *fun = dynamic_cast<FunctionDecl*>(f);
-    List<VariableDecl*> *formals = fun->GetFormals();
+    FunctionDecl *fun = dynamic_cast<FunctionDecl *>(f);
+    List<VariableDecl *> *formals = fun->GetFormals();
 
     int n_expected = formals->NumElements();
     int n_given = actuals->NumElements();
@@ -1268,16 +1262,17 @@ void Call::CheckFuncArgs() {
 void Call::Check(checkStep c) {
     switch (c) {
         case sem_decl:
-            this->CheckDecl(); break;
+            this->CheckDecl();
+            break;
         case sem_type:
-            this->CheckType(); break;
+            this->CheckType();
+            break;
         default:;
 
     }
 }
 
 void Call::Emit() {
-
 
 
     if (base) base->Emit();
@@ -1293,7 +1288,7 @@ void Call::Emit() {
         return;
     }
 
-    FunctionDecl *fn = dynamic_cast<FunctionDecl*>(field->GetDecl());
+    FunctionDecl *fn = dynamic_cast<FunctionDecl *>(field->GetDecl());
 
     bool is_ACall = (base != NULL) || (fn->IsClassMember());
 
@@ -1337,7 +1332,7 @@ void Call::Emit() {
 
 NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) {
 
-    (cType=c)->SetParent(this);
+    (cType = c)->SetParent(this);
 }
 
 void NewExpr::CheckDecl() {
@@ -1355,16 +1350,18 @@ void NewExpr::CheckType() {
 void NewExpr::Check(checkStep c) {
     switch (c) {
         case sem_decl:
-            this->CheckDecl(); break;
+            this->CheckDecl();
+            break;
         case sem_type:
-            this->CheckType(); break;
+            this->CheckType();
+            break;
         default:
             cType->Check(c);
     }
 }
 
 void NewExpr::Emit() {
-    ClassDecl *d = dynamic_cast<ClassDecl*>(cType->GetId()->GetDecl());
+    ClassDecl *d = dynamic_cast<ClassDecl *>(cType->GetId()->GetDecl());
 
     int size = d->GetInstanceSize();
     Location *t = CG->GenLoadConstant(size);
@@ -1375,8 +1372,8 @@ void NewExpr::Emit() {
 
 NewArrayExpr::NewArrayExpr(yyltype loc, Expr *sz, Type *et) : Expr(loc) {
 
-    (size=sz)->SetParent(this);
-    (elemType=et)->SetParent(this);
+    (size = sz)->SetParent(this);
+    (elemType = et)->SetParent(this);
 }
 
 void NewArrayExpr::CheckType() {
@@ -1457,8 +1454,8 @@ void ReadLineExpr::Emit() {
 PostfixExpr::PostfixExpr(LValue *lv, Operator *o)
         : Expr(Join(lv->GetLocation(), o->GetLocation())) {
 
-    (lvalue=lv)->SetParent(this);
-    (op=o)->SetParent(this);
+    (lvalue = lv)->SetParent(this);
+    (op = o)->SetParent(this);
 }
 
 void PostfixExpr::CheckType() {
@@ -1512,12 +1509,9 @@ void PostfixExpr::Emit() {
 }
 
 
+Program::Program(List<Decl *> *d) {
 
-
-
-Program::Program(List<Decl*> *d) {
-
-    (decls=d)->SetParentAll(this);
+    (decls = d)->SetParentAll(this);
 }
 
 void Program::BuildSymTable() {
@@ -1528,7 +1522,6 @@ void Program::BuildSymTable() {
 }
 
 void Program::Check() {
-
 
 
     scopeHandler->ResetSymbolTable();
@@ -1544,7 +1537,6 @@ void Program::Check() {
 }
 
 void Program::Emit() {
-
 
 
     bool has_main = false;
@@ -1564,7 +1556,6 @@ void Program::Emit() {
     }
 
 
-
     for (int i = 0; i < decls->NumElements(); i++) {
         decls->Nth(i)->AssignOffset();
     }
@@ -1574,23 +1565,21 @@ void Program::Emit() {
     }
 
 
-
     decls->EmitAll();
 
 
-    if(semantic_error != 0)
+    if (semantic_error != 0)
         return;
 
 
     CG->DoFinalCodeGen();
 }
 
-StmtBlock::StmtBlock(List<VariableDecl*> *d, List<Stmt*> *s) {
+StmtBlock::StmtBlock(List<VariableDecl *> *d, List<Stmt *> *s) {
 
-    (decls=d)->SetParentAll(this);
-    (stmts=s)->SetParentAll(this);
+    (decls = d)->SetParentAll(this);
+    (stmts = s)->SetParentAll(this);
 }
-
 
 
 void StmtBlock::BuildSymTable() {
@@ -1614,16 +1603,15 @@ void StmtBlock::Emit() {
 
 ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {
 
-    (test=t)->SetParent(this);
-    (body=b)->SetParent(this);
+    (test = t)->SetParent(this);
+    (body = b)->SetParent(this);
 }
 
-ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b) {
+ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b) : LoopStmt(t, b) {
 
-    (init=i)->SetParent(this);
-    (step=s)->SetParent(this);
+    (init = i)->SetParent(this);
+    (step = s)->SetParent(this);
 }
-
 
 
 void ForStmt::BuildSymTable() {
@@ -1648,7 +1636,8 @@ void ForStmt::CheckType() {
 void ForStmt::Check(checkStep c) {
     switch (c) {
         case sem_type:
-            this->CheckType(); break;
+            this->CheckType();
+            break;
         default:
             init->Check(c);
             test->Check(c);
@@ -1678,7 +1667,6 @@ void ForStmt::Emit() {
 }
 
 
-
 void WhileStmt::BuildSymTable() {
     scopeHandler->BuildScope();
     body->BuildSymTable();
@@ -1699,7 +1687,8 @@ void WhileStmt::CheckType() {
 void WhileStmt::Check(checkStep c) {
     switch (c) {
         case sem_type:
-            this->CheckType(); break;
+            this->CheckType();
+            break;
         default:
             test->Check(c);
             scopeHandler->EnterScope();
@@ -1724,12 +1713,11 @@ void WhileStmt::Emit() {
     CG->GenLabel(l1);
 }
 
-IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) {
+IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb) : ConditionalStmt(t, tb) {
 
     elseBody = eb;
     if (elseBody) elseBody->SetParent(this);
 }
-
 
 
 void IfStmt::BuildSymTable() {
@@ -1762,7 +1750,8 @@ void IfStmt::CheckType() {
 void IfStmt::Check(checkStep c) {
     switch (c) {
         case sem_type:
-            this->CheckType(); break;
+            this->CheckType();
+            break;
         default:
             test->Check(c);
             scopeHandler->EnterScope();
@@ -1808,12 +1797,12 @@ void BreakStmt::Emit() {
     Node *n = this;
     while (n->GetParent()) {
         if (n->IsLoopStmt()) {
-            const char *l = dynamic_cast<LoopStmt*>(n)->GetEndLoopLabel();
+            const char *l = dynamic_cast<LoopStmt *>(n)->GetEndLoopLabel();
 
             CG->GenGoto(l);
             return;
         } else if (n->IsSwitchStmt()) {
-            const char *l = dynamic_cast<SwitchStmt*>(n)->GetEndSwitchLabel();
+            const char *l = dynamic_cast<SwitchStmt *>(n)->GetEndSwitchLabel();
 
             CG->GenGoto(l);
             return;
@@ -1822,14 +1811,13 @@ void BreakStmt::Emit() {
     }
 }
 
-CaseStmt::CaseStmt(IntLiteral *v, List<Stmt*> *s) {
+CaseStmt::CaseStmt(IntLiteral *v, List<Stmt *> *s) {
 
     value = v;
     if (value) value->SetParent(this);
-    (stmts=s)->SetParentAll(this);
+    (stmts = s)->SetParentAll(this);
     case_label = NULL;
 }
-
 
 
 void CaseStmt::BuildSymTable() {
@@ -1854,13 +1842,12 @@ void CaseStmt::Emit() {
     stmts->EmitAll();
 }
 
-SwitchStmt::SwitchStmt(Expr *e, List<CaseStmt*> *c) {
+SwitchStmt::SwitchStmt(Expr *e, List<CaseStmt *> *c) {
 
-    (expr=e)->SetParent(this);
-    (cases=c)->SetParentAll(this);
+    (expr = e)->SetParent(this);
+    (cases = c)->SetParentAll(this);
     end_switch_label = NULL;
 }
-
 
 
 void SwitchStmt::BuildSymTable() {
@@ -1883,8 +1870,6 @@ void SwitchStmt::Emit() {
     end_switch_label = CG->NewLabel();
 
     Location *switch_value = expr->GetEmitLocDeref();
-
-
 
 
     for (int i = 0; i < cases->NumElements(); i++) {
@@ -1919,9 +1904,8 @@ void SwitchStmt::Emit() {
 
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) {
 
-    (expr=e)->SetParent(this);
+    (expr = e)->SetParent(this);
 }
-
 
 
 void ReturnStmt::Check(checkStep c) {
@@ -1930,11 +1914,11 @@ void ReturnStmt::Check(checkStep c) {
         Node *n = this;
 
         while (n->GetParent()) {
-            if (dynamic_cast<FunctionDecl*>(n) != NULL) break;
+            if (dynamic_cast<FunctionDecl *>(n) != NULL) break;
             n = n->GetParent();
         }
         Type *t_given = expr->GetType();
-        Type *t_expected = dynamic_cast<FunctionDecl*>(n)->GetType();
+        Type *t_expected = dynamic_cast<FunctionDecl *>(n)->GetType();
         if (t_given && t_expected) {
             if (!t_expected->IsCompatibleWith(t_given)) {
                 semantic_error = 1;
@@ -1953,11 +1937,10 @@ void ReturnStmt::Emit() {
     }
 }
 
-PrintStmt::PrintStmt(List<Expr*> *a) {
+PrintStmt::PrintStmt(List<Expr *> *a) {
 
-    (args=a)->SetParentAll(this);
+    (args = a)->SetParentAll(this);
 }
-
 
 
 void PrintStmt::Check(checkStep c) {
@@ -1993,32 +1976,26 @@ void PrintStmt::Emit() {
     }
 
     BuiltIn f = PrintString;
-    char const * str = "\\n";
+    char const *str = "\\n";
     Location *l = CG->GenLoadConstant(str);
 
     CG->GenBuiltInCall(f, l);
 }
 
 
-
-
-
-
-
-Type *Type::intType    = new Type("int");
+Type *Type::intType = new Type("int");
 Type *Type::doubleType = new Type("double");
-Type *Type::voidType   = new Type("void");
-Type *Type::boolType   = new Type("bool");
-Type *Type::nullType   = new Type("null");
+Type *Type::voidType = new Type("void");
+Type *Type::boolType = new Type("bool");
+Type *Type::nullType = new Type("null");
 Type *Type::stringType = new Type("string");
-Type *Type::errorType  = new Type("error");
+Type *Type::errorType = new Type("error");
 
 Type::Type(const char *n) {
 
     typeName = strdup(n);
     semantic_type = NULL;
 }
-
 
 
 void Type::Check(checkStep c) {
@@ -2036,9 +2013,8 @@ void Type::Check(checkStep c) {
 
 NamedType::NamedType(Identifier *i) : Type(*i->GetLocation()) {
 
-    (id=i)->SetParent(this);
+    (id = i)->SetParent(this);
 }
-
 
 
 void NamedType::CheckDecl(checkFor r) {
@@ -2072,7 +2048,7 @@ bool NamedType::IsEquivalentTo(Type *other) {
     if (!other->IsNamedType()) {
         return false;
     }
-    NamedType * nt = dynamic_cast<NamedType*>(other);
+    NamedType *nt = dynamic_cast<NamedType *>(other);
     return (id->IsEquivalentTo(nt->GetId()));
 }
 
@@ -2087,14 +2063,14 @@ bool NamedType::IsCompatibleWith(Type *other) {
     } else if (this->IsEquivalentTo(other)) {
         return true;
     } else {
-        NamedType * nt = dynamic_cast<NamedType*>(other);
+        NamedType *nt = dynamic_cast<NamedType *>(other);
         Decl *decl1 = id->GetDecl();
         Decl *decl2 = nt->GetId()->GetDecl();
 
         if (!decl2->IsClassDecl()) {
             return false;
         }
-        ClassDecl *cdecl2 = dynamic_cast<ClassDecl*>(decl2);
+        ClassDecl *cdecl2 = dynamic_cast<ClassDecl *>(decl2);
 
         return cdecl2->IsChildOf(decl1);
     }
@@ -2102,7 +2078,7 @@ bool NamedType::IsCompatibleWith(Type *other) {
 
 ArrayType::ArrayType(yyltype loc, Type *et) : Type(loc) {
 
-    (elemType=et)->SetParent(this);
+    (elemType = et)->SetParent(this);
 }
 
 
@@ -2127,7 +2103,7 @@ bool ArrayType::IsEquivalentTo(Type *other) {
     if (!other->IsArrayType()) {
         return false;
     }
-    ArrayType * nt = dynamic_cast<ArrayType*>(other);
+    ArrayType *nt = dynamic_cast<ArrayType *>(other);
     return (elemType->IsEquivalentTo(nt->GetElemType()));
 }
 

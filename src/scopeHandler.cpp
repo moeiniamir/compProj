@@ -7,19 +7,17 @@
 #include "ast.h"
 
 
-
 SymbolTable *scopeHandler;
 
 
-
 class Scope {
-  protected:
-    Hashtable<Decl*> *ht;
+protected:
+    Hashtable<Decl *> *ht;
     const char *parent;
     std::list<const char *> *interface;
     const char *owner;
 
-  public:
+public:
     Scope() {
         ht = NULL;
         parent = NULL;
@@ -29,25 +27,32 @@ class Scope {
     }
 
     bool HasHT() { return ht == NULL ? false : true; }
-    void BuildHT() { ht = new Hashtable<Decl*>; }
-    Hashtable<Decl*> * GetHT() { return ht; }
+
+    void BuildHT() { ht = new Hashtable<Decl *>; }
+
+    Hashtable<Decl *> *GetHT() { return ht; }
 
     bool HasParent() { return parent == NULL ? false : true; }
+
     void SetParent(const char *p) { parent = p; }
-    const char * GetParent() { return parent; }
+
+    const char *GetParent() { return parent; }
 
     bool HasInterface() { return !interface->empty(); }
+
     void AddInterface(const char *p) { interface->push_back(p); }
-    std::list<const char *> * GetInterface() { return interface; }
+
+    std::list<const char *> *GetInterface() { return interface; }
 
     bool HasOwner() { return owner == NULL ? false : true; }
+
     void SetOwner(const char *o) { owner = o; }
-    const char * GetOwner() { return owner; }
+
+    const char *GetOwner() { return owner; }
 };
 
 
-SymbolTable::SymbolTable()
-{
+SymbolTable::SymbolTable() {
 
 
     scopes = new std::vector<Scope *>;
@@ -79,8 +84,7 @@ SymbolTable::ResetSymbolTable() {
 
 
 void
-SymbolTable::BuildScope()
-{
+SymbolTable::BuildScope() {
 
     scope_cnt++;
     scopes->push_back(new Scope());
@@ -90,8 +94,7 @@ SymbolTable::BuildScope()
 
 
 void
-SymbolTable::BuildScope(const char *key)
-{
+SymbolTable::BuildScope(const char *key) {
 
     scope_cnt++;
     scopes->push_back(new Scope());
@@ -102,8 +105,7 @@ SymbolTable::BuildScope(const char *key)
 
 
 void
-SymbolTable::EnterScope()
-{
+SymbolTable::EnterScope() {
 
     scope_cnt++;
     activeScopes->push_back(scope_cnt);
@@ -112,8 +114,7 @@ SymbolTable::EnterScope()
 
 
 int
-SymbolTable::FindScopeFromOwnerName(const char *key)
-{
+SymbolTable::FindScopeFromOwnerName(const char *key) {
     int scope = -1;
 
     for (int i = 0; i < scopes->size(); i++) {
@@ -131,19 +132,15 @@ SymbolTable::FindScopeFromOwnerName(const char *key)
 
 
 Decl *
-SymbolTable::Lookup(Identifier *id)
-{
+SymbolTable::Lookup(Identifier *id) {
     Decl *d = NULL;
     const char *parent = NULL;
     const char *key = id->GetIdName();
 
 
-
-
-
     for (int i = activeScopes->size(); i > 0; --i) {
 
-        int scope = activeScopes->at(i-1);
+        int scope = activeScopes->at(i - 1);
         Scope *s = scopes->at(scope);
 
         if (s->HasHT()) {
@@ -177,13 +174,11 @@ SymbolTable::Lookup(Identifier *id)
 
 
 Decl *
-SymbolTable::LookupParent(Identifier *id)
-{
+SymbolTable::LookupParent(Identifier *id) {
     Decl *d = NULL;
     const char *parent = NULL;
     const char *key = id->GetIdName();
     Scope *s = scopes->at(cur_scope);
-
 
 
     while (s->HasParent()) {
@@ -210,21 +205,19 @@ SymbolTable::LookupParent(Identifier *id)
 
 
 Decl *
-SymbolTable::LookupInterface(Identifier *id)
-{
+SymbolTable::LookupInterface(Identifier *id) {
     Decl *d = NULL;
     const char *key = id->GetIdName();
     int scope;
     Scope *s = scopes->at(cur_scope);
 
 
-
     if (s->HasInterface()) {
 
-        std::list<const char *> * itfc = s->GetInterface();
+        std::list<const char *> *itfc = s->GetInterface();
 
         for (std::list<const char *>::iterator it = itfc->begin();
-                it != itfc->end(); it++) {
+             it != itfc->end(); it++) {
             scope = FindScopeFromOwnerName(*it);
 
 
@@ -241,11 +234,10 @@ SymbolTable::LookupInterface(Identifier *id)
 }
 
 
-Decl * SymbolTable::LookupField(Identifier *base, Identifier *field) {
+Decl *SymbolTable::LookupField(Identifier *base, Identifier *field) {
     Decl *d = NULL;
     const char *b = base->GetIdName();
     const char *f = field->GetIdName();
-
 
 
     int scope = FindScopeFromOwnerName(b);
@@ -281,13 +273,13 @@ Decl * SymbolTable::LookupField(Identifier *base, Identifier *field) {
 }
 
 
-Decl * SymbolTable::LookupThis() {
+Decl *SymbolTable::LookupThis() {
 
     Decl *d = NULL;
 
     for (int i = activeScopes->size(); i > 0; --i) {
 
-        int scope = activeScopes->at(i-1);
+        int scope = activeScopes->at(i - 1);
         Scope *s = scopes->at(scope);
 
         if (s->HasOwner()) {
@@ -305,8 +297,7 @@ Decl * SymbolTable::LookupThis() {
 
 
 int
-SymbolTable::InsertSymbol(Decl *decl)
-{
+SymbolTable::InsertSymbol(Decl *decl) {
     const char *key = decl->GetId()->GetIdName();
     Scope *s = scopes->at(cur_scope);
 
@@ -321,8 +312,7 @@ SymbolTable::InsertSymbol(Decl *decl)
 
 
 bool
-SymbolTable::LocalLookup(Identifier *id)
-{
+SymbolTable::LocalLookup(Identifier *id) {
     Decl *d = NULL;
     const char *key = id->GetIdName();
     Scope *s = scopes->at(cur_scope);
@@ -337,8 +327,7 @@ SymbolTable::LocalLookup(Identifier *id)
 
 
 void
-SymbolTable::ExitScope()
-{
+SymbolTable::ExitScope() {
 
     activeScopes->pop_back();
     cur_scope = activeScopes->back();
@@ -346,15 +335,13 @@ SymbolTable::ExitScope()
 
 
 void
-SymbolTable::SetScopeParent(const char *key)
-{
+SymbolTable::SetScopeParent(const char *key) {
     scopes->at(cur_scope)->SetParent(key);
 }
 
 
 void
-SymbolTable::SetInterface(const char *key)
-{
+SymbolTable::SetInterface(const char *key) {
     scopes->at(cur_scope)->AddInterface(key);
 }
 

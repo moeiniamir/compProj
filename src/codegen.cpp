@@ -204,16 +204,11 @@ void CodeGenerator::DoFinalCodeGen() {
 }
 
 
-
-
 Location::Location(Segment s, int o, const char *name) :
         variableName(strdup(name)), segment(s), offset(o), base(NULL) {}
 
 Location::Location(Segment s, int o, const char *name, Location *b) :
         variableName(strdup(name)), segment(s), offset(o), base(b) {}
-
-
-
 
 
 void Instruction::Emit(Mips *mips) {
@@ -237,7 +232,7 @@ LoadStringLiteral::LoadStringLiteral(Location *d, const char *s)
         : dst(d) {
     ;
     const char *quote = (*s == '"') ? "" : "\"";
-    str = new char[strlen(s) + 2*strlen(quote) + 1];
+    str = new char[strlen(s) + 2 * strlen(quote) + 1];
     sprintf(str, "%s%s%s", quote, s, quote);
     quote = (strlen(str) > 50) ? "...\"" : "";
     sprintf(printed, "%s = %.50s%s", dst->GetName(), str, quote);
@@ -296,7 +291,7 @@ void Store::EmitSpecific(Mips *mips) {
     mips->EmitStore(dst, src, offset);
 }
 
-const char * const BinaryOp::opName[BinaryOp::NumOps] = {
+const char *const BinaryOp::opName[BinaryOp::NumOps] = {
         "+", "-", "*", "/", "%",
         "==", "!=", "<", "<=", ">", ">=",
         "&&", "||"
@@ -305,15 +300,14 @@ const char * const BinaryOp::opName[BinaryOp::NumOps] = {
 BinaryOp::OpCode BinaryOp::OpCodeForName(const char *name) {
     for (int i = 0; i < NumOps; i++)
         if (opName[i] && !strcmp(opName[i], name))
-            return (OpCode)i;
+            return (OpCode) i;
 
     return Add;
 }
 
 BinaryOp::BinaryOp(OpCode c, Location *d, Location *o1, Location *o2)
         : code(c), dst(d), op1(o1), op2(o2) {
-    ;
-    ;
+    ;;
     sprintf(printed, "%s = %s %s %s", dst->GetName(), op1->GetName(),
             opName[code], op2->GetName());
 }
@@ -326,7 +320,6 @@ Label::Label(const char *l) : label(strdup(l)) {
     ;
     *printed = '\0';
 }
-
 
 
 void Label::EmitSpecific(Mips *mips) {
@@ -353,13 +346,13 @@ void IfZ::EmitSpecific(Mips *mips) {
 }
 
 BeginFunc::BeginFunc() {
-    sprintf(printed,"BeginFunc (unassigned)");
+    sprintf(printed, "BeginFunc (unassigned)");
     frameSize = -555;
 }
 
 void BeginFunc::SetFrameSize(int numBytesForAllLocalsAndTemps) {
     frameSize = numBytesForAllLocalsAndTemps;
-    sprintf(printed,"BeginFunc %d", frameSize);
+    sprintf(printed, "BeginFunc %d", frameSize);
 }
 
 void BeginFunc::EmitSpecific(Mips *mips) {
@@ -375,7 +368,7 @@ void EndFunc::EmitSpecific(Mips *mips) {
 }
 
 Return::Return(Location *v) : val(v) {
-    sprintf(printed, "Return %s", val? val->GetName() : "");
+    sprintf(printed, "Return %s", val ? val->GetName() : "");
 }
 
 void Return::EmitSpecific(Mips *mips) {
@@ -403,7 +396,7 @@ void PopParams::EmitSpecific(Mips *mips) {
 
 LCall::LCall(const char *l, Location *d)
         : label(strdup(l)), dst(d) {
-    sprintf(printed, "%s%sLCall %s", dst? dst->GetName(): "", dst?" = ":"",
+    sprintf(printed, "%s%sLCall %s", dst ? dst->GetName() : "", dst ? " = " : "",
             label);
 }
 
@@ -414,9 +407,10 @@ void LCall::EmitSpecific(Mips *mips) {
 ACall::ACall(Location *ma, Location *d)
         : dst(d), methodAddr(ma) {
     ;
-    sprintf(printed, "%s%sACall %s", dst? dst->GetName(): "", dst?" = ":"",
+    sprintf(printed, "%s%sACall %s", dst ? dst->GetName() : "", dst ? " = " : "",
             methodAddr->GetName());
 }
+
 void ACall::EmitSpecific(Mips *mips) {
     mips->EmitACall(dst, methodAddr);
 }
@@ -428,16 +422,9 @@ VTable::VTable(const char *l, List<const char *> *m)
 }
 
 
-
 void VTable::EmitSpecific(Mips *mips) {
     mips->EmitVTable(label, methodLabels);
 }
-
-
-
-
-
-
 
 
 static bool LocationsAreSame(Location *var1, Location *var2) {
@@ -452,8 +439,7 @@ static bool LocationsAreSame(Location *var1, Location *var2) {
 void Mips::SpillRegister(Location *dst, Register reg) {
     ;
     const char *offsetFromWhere = dst->GetSegment() == fpRelative
-                                  ? regs[fp].name : regs[gp].name;
-    ;
+                                  ? regs[fp].name : regs[gp].name;;
     Emit("sw %s, %d(%s)\t# spill %s from %s to %s%+d", regs[reg].name,
          dst->GetOffset(), offsetFromWhere, dst->GetName(), regs[reg].name,
          offsetFromWhere, dst->GetOffset());
@@ -463,8 +449,7 @@ void Mips::SpillRegister(Location *dst, Register reg) {
 void Mips::FillRegister(Location *src, Register reg) {
     ;
     const char *offsetFromWhere = src->GetSegment() == fpRelative
-                                  ? regs[fp].name : regs[gp].name;
-    ;
+                                  ? regs[fp].name : regs[gp].name;;
     Emit("lw %s, %d(%s)\t# fill %s to %s from %s%+d", regs[reg].name,
          src->GetOffset(), offsetFromWhere, src->GetName(), regs[reg].name,
          offsetFromWhere, src->GetOffset());
@@ -482,7 +467,7 @@ void Mips::Emit(const char *fmt, ...) {
     for (int i = 1023; i >= 0; i--) {
 
 
-        if (buf[i] == '#' && buf[i+1]==' ') {
+        if (buf[i] == '#' && buf[i + 1] == ' ') {
             buf[i] = 0;
             break;
         }
@@ -629,12 +614,10 @@ void Mips::EmitBeginFunction(int stackFrameSize) {
 }
 
 
-
 void Mips::EmitEndFunction() {
     Emit("# (below handles reaching end of fn body with no explicit return)");
     EmitReturn(NULL);
 }
-
 
 
 void Mips::EmitVTable(const char *label, List<const char *> *methodLabels) {
@@ -657,8 +640,7 @@ void Mips::EmitPreamble() {
 
 const char *Mips::NameForTac(BinaryOp::OpCode code) {
     ;
-    const char *name = mipsName[code];
-    ;
+    const char *name = mipsName[code];;
     return name;
 }
 

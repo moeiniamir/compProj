@@ -8,13 +8,14 @@
 #include "ds.h"
 
 
-
 class Decl;
+
 class Identifier;
+
 class Scope;
 
 class SymbolTable {
-  protected:
+protected:
     std::vector<Scope *> *scopes;
     std::vector<int> *activeScopes;
     int cur_scope;
@@ -23,7 +24,7 @@ class SymbolTable {
 
     int FindScopeFromOwnerName(const char *owner);
 
-  public:
+public:
     SymbolTable();
 
 

@@ -416,9 +416,3 @@ T_INTLITERAL        { $$ = new IntLiteral(@1, $1); }
 ;
 
 %%
-
-
-
-
-
-
