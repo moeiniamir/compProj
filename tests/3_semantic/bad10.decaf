@@ -1,8 +1,0 @@
-Unknown g;
-
-void main()
-{
-   var = New(Missing);
-   g.GetColor(10);
-}
-   
