@@ -1412,7 +1412,7 @@ void NewArrayExpr::Emit() {
     size->Emit();
     Location *t0 = size->GetEmitLocDeref();
     Location *t1 = CG->GenLoadConstant(0);
-    Location *t2 = CG->GenBinaryOp("<=", t0, t1);
+    Location *t2 = CG->GenBinaryOp("<", t0, t1);
 
     const char *l = CG->NewLabel();
     CG->GenIfZ(t2, l);
